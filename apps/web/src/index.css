@@ -140,6 +140,22 @@ a {
   animation: vm-fade-in 0.25s ease;
 }
 
+
+/* $SPORE contract badge glow */
+@keyframes spore-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(217, 119, 43, 0.45), 0 0 32px rgba(217, 119, 43, 0.18);
+    border-color: rgba(217, 119, 43, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(217, 119, 43, 0.75), 0 0 64px rgba(217, 119, 43, 0.32);
+    border-color: #d9772b;
+  }
+}
+.spore-glow {
+  animation: spore-glow-pulse 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
@@ -152,7 +168,8 @@ a {
   }
 
   .vm-enter,
-  .vm-cta {
+  .vm-cta,
+  .spore-glow {
     animation: none;
   }
 }
