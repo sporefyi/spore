@@ -40,8 +40,11 @@ function FlowLink() {
   return (
     <div
       aria-hidden="true"
-      className="mx-auto h-10 w-px bg-rule-strong md:mx-0 md:h-px md:w-16 md:flex-none"
-    />
+      className="relative mx-auto h-10 w-px bg-rule-strong md:mx-0 md:h-px md:w-16 md:flex-none"
+    >
+      <span className="flow-packet" />
+      <span className="flow-packet flow-packet-2" />
+    </div>
   );
 }
 
@@ -84,17 +87,18 @@ export default function Market() {
               </div>
             </div>
             <FlowLink />
-            <div className="border-y border-rule-strong py-3 text-center md:px-6 md:text-left">
+            <div className="flow-router border-y border-rule-strong py-3 text-center md:px-6 md:text-left">
               <span className="font-mono text-sm tracking-widest text-ink">
                 ROUTER
               </span>
             </div>
             <FlowLink />
             <ul className="flex flex-col items-center gap-2 md:items-start md:border-l md:border-rule-strong md:pl-6">
-              {DESTINATIONS.map((d) => (
+              {DESTINATIONS.map((d, i) => (
                 <li
                   key={d}
-                  className="font-mono text-sm tracking-widest text-muted"
+                  className="flow-dest font-mono text-sm tracking-widest text-muted"
+                  style={{ animationDelay: `${i * 0.4}s` }}
                 >
                   {d}
                 </li>
