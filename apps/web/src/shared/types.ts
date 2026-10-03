@@ -45,6 +45,10 @@ export interface AgentEconomics {
   utilization: number | null;
   /** outstanding / 90d revenue. */
   debtToRevenue: number | null;
+  /** USDG staked behind this agent's credit line. */
+  stakedUsd: number | null;
+  /** Number of distinct backers staking. */
+  backers: number | null;
 }
 
 export interface AgentCreditProfile {
