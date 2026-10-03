@@ -174,7 +174,10 @@ a {
   .flow-dest,
   .flow-router,
   .live-badge,
-  .merchant-row {
+  .merchant-row,
+  .sigma-breathe,
+  .term-shimmer,
+  .weight-bar {
     animation: none;
   }
 }
@@ -229,6 +232,50 @@ a {
 }
 .flow-dest {
   animation: flow-dest-in 3.2s ease-in-out infinite;
+}
+
+/* Score lab: the sigma breathes */
+@keyframes sigma-breathe {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+.sigma-breathe {
+  display: inline-block;
+  animation: sigma-breathe 2.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Score lab: expansion terms shimmer through */
+@keyframes term-shimmer {
+  0% { opacity: 0.45; }
+  50% { opacity: 1; }
+  100% { opacity: 0.45; }
+}
+.term-shimmer {
+  animation: term-shimmer 3s ease-in-out infinite;
+}
+
+/* Score lab: weight bars grow on mount */
+@keyframes weight-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.weight-bar {
+  transform-origin: left;
+  animation: weight-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Score lab: band marker glides */
+.band-marker {
+  transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Score lab: geek bars pulse on hover */
+.geek-bar {
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+.geek-bar:hover {
+  filter: brightness(1.6);
 }
 
 /* Merchant list: LIVE badges breathe */
