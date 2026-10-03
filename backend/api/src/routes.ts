@@ -5,6 +5,7 @@ import { registerProtocol } from "./routes/protocol.js";
 import { registerStats } from "./routes/stats.js";
 import { registerAgents } from "./routes/agents.js";
 import { registerLedger } from "./routes/ledger.js";
+import { registerOnboard } from "./routes/onboard.js";
 
 export function registerRoutes(app: FastifyInstance, deps: AppDeps): void {
   app.register(
@@ -14,6 +15,7 @@ export function registerRoutes(app: FastifyInstance, deps: AppDeps): void {
       registerStats(v1, deps);
       registerAgents(v1, deps);
       registerLedger(v1, deps);
+      registerOnboard(v1, deps);
     },
     { prefix: "/api/v1" },
   );
