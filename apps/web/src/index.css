@@ -169,7 +169,62 @@ a {
 
   .vm-enter,
   .vm-cta,
-  .spore-glow {
+  .spore-glow,
+  .flow-packet,
+  .flow-dest,
+  .flow-router {
     animation: none;
   }
+}
+
+/* Market flow chart: packets traveling the wires */
+@keyframes flow-packet-x {
+  0% { left: -6px; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: calc(100% + 6px); opacity: 0; }
+}
+@keyframes flow-packet-y {
+  0% { top: -6px; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { top: calc(100% + 6px); opacity: 0; }
+}
+.flow-packet {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: #d9772b;
+  box-shadow: 0 0 8px rgba(217, 119, 43, 0.9), 0 0 16px rgba(217, 119, 43, 0.4);
+  animation: flow-packet-y 1.6s linear infinite;
+}
+@media (min-width: 768px) {
+  .flow-packet {
+    animation-name: flow-packet-x;
+  }
+  .flow-packet.flow-packet-2 {
+    animation-delay: 0.8s;
+  }
+}
+.flow-packet.flow-packet-2 {
+  animation-delay: 0.8s;
+}
+
+/* Router breathes as packets pass through */
+@keyframes flow-router-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(217, 119, 43, 0); }
+  50% { box-shadow: 0 0 28px rgba(217, 119, 43, 0.22); }
+}
+.flow-router {
+  animation: flow-router-glow 3.2s ease-in-out infinite;
+}
+
+/* Destinations light up in cascade */
+@keyframes flow-dest-in {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.flow-dest {
+  animation: flow-dest-in 3.2s ease-in-out infinite;
 }
