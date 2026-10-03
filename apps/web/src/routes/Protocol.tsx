@@ -71,8 +71,8 @@ export default function Protocol() {
         <p className="mt-8 max-w-2xl font-serif text-xl leading-relaxed text-muted">
           SPORE turns an agent&apos;s observable on-chain behavior into a
           credit record. The mechanics run in six steps, from identity to a
-          network where trust compounds. This page describes the design; none
-          of it is live yet.
+          network where trust compounds. The contracts below are deployed on
+          Robinhood Chain — this page describes how they work.
         </p>
         <div className="mt-8">
           <DemoBadge />
