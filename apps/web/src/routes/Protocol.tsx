@@ -41,8 +41,7 @@ const SECTIONS: Section[] = [
   {
     n: '5',
     title: 'Oracle',
-    body: 'The scoring oracle reads ledger state and publishes a portable score that other contracts can consume. Lending markets and agents can read it without running their own model. The oracle is not deployed.',
-    notDeployed: true,
+    body: 'The scoring oracle reads ledger state and publishes a portable score that other contracts can consume. Lending markets and agents can read it without running their own model. The oracle is deployed and its publisher is live.',
   },
   {
     n: '6',
@@ -136,10 +135,34 @@ export default function Protocol() {
             Deployment status
           </h2>
           <dl className="mt-8 border-t border-rule font-mono text-sm">
-            <div className="flex items-baseline justify-between gap-6 border-b border-rule py-4">
-              <dt className="text-faint">Contract</dt>
-              <dd className="tnum text-ink">—</dd>
-            </div>
+            {[
+              ['SporeRegistry', PRIMARY_CHAIN.contracts.registry],
+              ['CreditManager', PRIMARY_CHAIN.contracts.creditManager],
+              ['BackerVault', PRIMARY_CHAIN.contracts.backerVault],
+              ['ScoreOracle', PRIMARY_CHAIN.contracts.scoreOracle],
+              ['FeeRouter', PRIMARY_CHAIN.contracts.feeRouter],
+            ].map(([label, address]) => (
+              <div
+                key={label}
+                className="flex items-baseline justify-between gap-6 border-b border-rule py-4"
+              >
+                <dt className="text-faint">{label}</dt>
+                <dd className="tnum text-ink">
+                  {address ? (
+                    <a
+                      href={`${PRIMARY_CHAIN.explorerUrl}/address/${address}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-4 hover:text-fungal"
+                    >
+                      {`${address.slice(0, 6)}…${address.slice(-4)}`}
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </dd>
+              </div>
+            ))}
             <div className="flex items-baseline justify-between gap-6 border-b border-rule py-4">
               <dt className="text-faint">Chain</dt>
               <dd className="tnum text-ink">
@@ -148,11 +171,20 @@ export default function Protocol() {
             </div>
             <div className="flex items-baseline justify-between gap-6 border-b border-rule py-4">
               <dt className="text-faint">Explorer</dt>
-              <dd className="tnum text-ink">—</dd>
+              <dd className="tnum text-ink">
+                <a
+                  href={PRIMARY_CHAIN.explorerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-4 hover:text-fungal"
+                >
+                  Blockscout
+                </a>
+              </dd>
             </div>
           </dl>
           <p className="mt-4 text-sm text-faint">
-            The contracts are not deployed on any network.
+            Deployed 2026-10-03. Settlement asset: USDG.
           </p>
           <p className="mt-8 text-muted">
             Building against this?{' '}
