@@ -18,6 +18,8 @@ import { ethers } from "ethers";
  *
  * registerAgent is permissionless on-chain; this endpoint exists to sponsor
  * gas and to bind the onboarding to a verified Orbio account.
+ *
+ * Deployed 2026-10-03.
  */
 
 const ORBIO_VERIFY_URL = "https://api.orbio.so/api/v1/tools/social.post.status";
