@@ -7,13 +7,13 @@ import {
   DemoBadge,
 } from '../shared/components/primitives';
 
-const CATEGORIES: string[] = [
-  'AI inference',
-  'GPU compute',
-  'APIs',
-  'Data',
-  'Storage',
-  'RPC',
+const CATEGORIES: { name: string; live: boolean }[] = [
+  { name: 'AI inference', live: false },
+  { name: 'GPU compute', live: false },
+  { name: 'APIs', live: false },
+  { name: 'Data', live: false },
+  { name: 'Storage', live: true },
+  { name: 'RPC', live: false },
 ];
 
 const DESTINATIONS: string[] = ['API', 'COMPUTE', 'DATA', 'RPC', 'STORAGE'];
@@ -103,21 +103,27 @@ export default function Market() {
           </div>
 
           <p className="mt-10 max-w-2xl font-sans text-sm leading-relaxed text-muted">
-            Credit routes exist as design; no merchant integration is live.
+            One merchant integration is live: SPORE Storage — pay 1 USDG, pin a file on IPFS.
           </p>
         </Reveal>
 
         <ul className="mt-12 border-t border-rule">
           {CATEGORIES.map((c) => (
             <li
-              key={c}
+              key={c.name}
               className="flex items-center gap-4 border-b border-rule py-4"
             >
-              <span className="font-mono text-sm text-ink">{c}</span>
+              <span className="font-mono text-sm text-ink">{c.name}</span>
               <span aria-hidden="true" className="h-px min-w-4 flex-1 bg-rule" />
-              <span className="font-mono text-[11px] tracking-widest text-ember">
-                NOT INTEGRATED
-              </span>
+              {c.live ? (
+                <span className="font-mono text-[11px] tracking-widest text-moss">
+                  LIVE
+                </span>
+              ) : (
+                <span className="font-mono text-[11px] tracking-widest text-ember">
+                  NOT INTEGRATED
+                </span>
+              )}
             </li>
           ))}
         </ul>
