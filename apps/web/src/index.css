@@ -172,7 +172,9 @@ a {
   .spore-glow,
   .flow-packet,
   .flow-dest,
-  .flow-router {
+  .flow-router,
+  .live-badge,
+  .merchant-row {
     animation: none;
   }
 }
@@ -227,4 +229,28 @@ a {
 }
 .flow-dest {
   animation: flow-dest-in 3.2s ease-in-out infinite;
+}
+
+/* Merchant list: LIVE badges breathe */
+@keyframes live-badge-pulse {
+  0%, 100% {
+    opacity: 0.75;
+    text-shadow: 0 0 6px rgba(120, 180, 90, 0.25);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 14px rgba(120, 180, 90, 0.55);
+  }
+}
+.live-badge {
+  animation: live-badge-pulse 2.8s ease-in-out infinite;
+}
+
+/* Merchant rows: staggered rise-in on first view */
+@keyframes merchant-row-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.merchant-row {
+  animation: merchant-row-in 0.6s ease both;
 }
