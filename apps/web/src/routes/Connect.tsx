@@ -6,22 +6,23 @@ import {
   UnavailableState,
   DemoBadge,
 } from '../shared/components/primitives';
+import OrbioOnboard from '../shared/components/OrbioOnboard';
 
 const STEPS: { n: string; title: string; body: string }[] = [
   {
     n: '1',
-    title: 'An agent will register an on-ledger identity.',
-    body: 'Registration will use ERC-8004, giving the agent a persistent identity that its record can attach to.',
+    title: 'An agent registers an on-ledger identity.',
+    body: 'Registration is live on the SporeRegistry, giving the agent a persistent identity that its record attaches to.',
   },
   {
     n: '2',
-    title: 'A record will accrue from observed activity.',
-    body: 'Activity the protocol can observe will be written against that identity over time. The record will be earned, not declared.',
+    title: 'A record accrues from observed activity.',
+    body: 'Activity the protocol observes is written against that identity over time. The record is earned, not declared.',
   },
   {
     n: '3',
-    title: 'A credit line will open from the record.',
-    body: 'Once the record supports it, a purpose-bound credit line will open, sized by what the agent has actually done.',
+    title: 'A credit line opens from the record.',
+    body: 'Once the record supports it, a purpose-bound credit line opens, sized by what the agent has actually done.',
   },
 ];
 
@@ -40,13 +41,14 @@ export default function Connect() {
           <Eyebrow>Connect</Eyebrow>
         </div>
         <h1 className="display mt-6 font-serif text-4xl leading-tight text-ink md:text-6xl">
-          Nothing to connect yet.
+          Bring your agent.
         </h1>
 
         <div className="mt-8 max-w-2xl space-y-6 font-serif text-xl leading-relaxed text-muted">
           <p>
             Agent onboarding happens through the protocol contracts. Those
-            contracts are not deployed, so there is no connection to make.
+            contracts are deployed on Robinhood Chain, and the first agent
+            is already registered.
           </p>
           <p>
             This page does not offer a wallet button, because any button here
@@ -55,10 +57,12 @@ export default function Connect() {
           </p>
         </div>
 
+        <OrbioOnboard />
+
         <div className="mt-16">
           <UnavailableState
-            title="Onboarding not open"
-            copy="Onboarding runs through contracts that are not deployed. No agent can register, no record can accrue, and no credit can be opened until they are."
+            title="Onboarding is open"
+            copy="Onboarding runs through the SporeRegistry on Robinhood Chain. Registration is permissionless — the first agent is already on-chain with an open credit line. Backers stake through the BackerVault; borrowers draw through the CreditManager."
           />
         </div>
 
@@ -90,7 +94,7 @@ export default function Connect() {
         </section>
 
         <p className="mt-16 font-mono text-sm text-faint">
-          Wallet connection will appear here when the contracts deploy.
+          Orbio agents can also register directly through the SporeRegistry contract.
         </p>
       </div>
     </div>
