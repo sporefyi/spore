@@ -118,11 +118,23 @@ export function Navbar() {
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
             {PRIMARY_CHAIN.name} · chain {PRIMARY_CHAIN.chainId}
           </span>
+          <a
+            href="https://robinhoodchain.blockscout.com/token/0xa5127fae2d0986a4cb6619b9c4ec53461726454b"
+            target="_blank"
+            rel="noreferrer"
+            className="spore-glow rounded-full border border-fungal/60 px-4 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-fungal"
+          >
+            $SPORE · 0xa5127fae2d0986a4cb6619b9c4ec53461726454b
+          </a>
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
-            credit protocol for agents · contracts not deployed
-          </span>
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
-            explorer —
+            <a
+              href={PRIMARY_CHAIN.explorerUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 hover:text-muted"
+            >
+              explorer
+            </a>
           </span>
         </div>
       </div>
@@ -169,7 +181,33 @@ export function Footer() {
             <dl className="mt-4 space-y-2 font-mono text-[12px] uppercase tracking-widest text-muted">
               <div className="flex gap-3">
                 <dt className="text-faint">Contracts:</dt>
-                <dd>NOT YET DEPLOYED</dd>
+                <dd className="space-y-1 normal-case">
+                  {(
+                    [
+                      ['Registry', PRIMARY_CHAIN.contracts.registry],
+                      ['CreditManager', PRIMARY_CHAIN.contracts.creditManager],
+                      ['BackerVault', PRIMARY_CHAIN.contracts.backerVault],
+                      ['ScoreOracle', PRIMARY_CHAIN.contracts.scoreOracle],
+                      ['FeeRouter', PRIMARY_CHAIN.contracts.feeRouter],
+                    ] as const
+                  ).map(([label, address]) => (
+                    <div key={label} className="flex gap-2">
+                      <span className="text-faint">{label}</span>
+                      {address ? (
+                        <a
+                          href={`${PRIMARY_CHAIN.explorerUrl}/address/${address}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline underline-offset-4 hover:text-ink"
+                        >
+                          {`${address.slice(0, 6)}…${address.slice(-4)}`}
+                        </a>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </div>
+                  ))}
+                </dd>
               </div>
               <div className="flex gap-3">
                 <dt className="text-faint">Chain:</dt>
@@ -179,7 +217,16 @@ export function Footer() {
               </div>
               <div className="flex gap-3">
                 <dt className="text-faint">Explorer:</dt>
-                <dd>—</dd>
+                <dd>
+                  <a
+                    href={PRIMARY_CHAIN.explorerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-4 hover:text-ink"
+                  >
+                    Blockscout
+                  </a>
+                </dd>
               </div>
             </dl>
           </div>
@@ -189,8 +236,9 @@ export function Footer() {
               Experimental protocol
             </div>
             <p className="mt-3 text-sm leading-relaxed text-muted">
-              SPORE is an unaudited experimental credit protocol. Contracts are
-              not deployed. Do not commit funds.
+              SPORE is an unaudited experimental credit protocol. Contracts
+              are deployed on Robinhood Chain. Do not commit funds you cannot
+              afford to lose.
             </p>
           </div>
         </div>
@@ -211,7 +259,33 @@ export function Footer() {
             >
               Priors
             </a>{' '}
-            — not a fork. · No contracts deployed.
+            — not a fork. ·{' '}
+            <a
+              href="https://robinhoodchain.blockscout.com/address/0x6902670409c4FA3a75C39A734c69beAEEBcF9729"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 hover:text-muted"
+            >
+              Contracts deployed
+            </a>
+            {' '}·{' '}
+            <a
+              href="https://x.com/SporeFyi"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 hover:text-muted"
+            >
+              𝕏 @SporeFyi
+            </a>
+            {' '}·{' '}
+            <a
+              href="https://github.com/sporefyi/spore"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 hover:text-muted"
+            >
+              GitHub
+            </a>
           </span>
         </div>
       </div>
