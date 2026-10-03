@@ -32,6 +32,13 @@ describe("createDb / query", () => {
   it("createDb rejects unknown scheme", async () => {
     await expect(createDb("mysql://x")).rejects.toThrow();
   });
+
+  it("createDb accepts postgresql:// scheme (Render format)", async () => {
+    // Pool creation is lazy: resolves without connecting; must not throw
+    // "Unsupported database URL scheme".
+    const db = await createDb("postgresql://u:p@127.0.0.1:1/db");
+    await db.close();
+  });
 });
 
 describe("withTx", () => {
