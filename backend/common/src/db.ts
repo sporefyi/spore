@@ -124,7 +124,7 @@ export async function createDb(url: string): Promise<DbClient> {
     await pg.waitReady;
     return createPgliteClient(pg);
   }
-  if (url.startsWith("pg://") || url.startsWith("postgres://")) {
+  if (url.startsWith("pg://") || url.startsWith("postgres://") || url.startsWith("postgresql://")) {
     const pool = new Pool({ connectionString: url, max: 5 });
     pool.on("error", () => {
       // Idle client errors must not crash the process; the next query will surface problems.
