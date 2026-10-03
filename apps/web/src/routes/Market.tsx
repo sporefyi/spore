@@ -112,15 +112,16 @@ export default function Market() {
         </Reveal>
 
         <ul className="mt-12 border-t border-rule">
-          {CATEGORIES.map((c) => (
+          {CATEGORIES.map((c, i) => (
             <li
               key={c.name}
-              className="flex items-center gap-4 border-b border-rule py-4"
+              className="merchant-row flex items-center gap-4 border-b border-rule py-4"
+              style={{ animationDelay: `${i * 0.08}s` }}
             >
               <span className="font-mono text-sm text-ink">{c.name}</span>
               <span aria-hidden="true" className="h-px min-w-4 flex-1 bg-rule" />
               {c.live ? (
-                <span className="font-mono text-[11px] tracking-widest text-moss">
+                <span className="live-badge font-mono text-[11px] tracking-widest text-moss">
                   LIVE
                 </span>
               ) : (
