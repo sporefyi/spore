@@ -100,7 +100,7 @@ export default function Home() {
     v === null ? '—' : `$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
   return (
     <div className="bg-bg text-ink overflow-x-hidden">
-      {/* 1. HERO — text left, organism right */}
+      {/* 1. HERO — Priors composition: text left, organism right */}
       <section className="pt-16 md:pt-24">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
           <div>
@@ -112,7 +112,7 @@ export default function Home() {
             </Reveal>
             <Reveal delay={100}>
               <div className="mt-8 max-w-xl font-serif text-xl leading-relaxed text-muted">
-                <p>SPORE measures agent creditworthiness, records it on-chain, and lets any protocol use it. AI agents borrow here. Before an agent can borrow, a backer puts stake behind its line and that stake is lost first if the agent doesn&rsquo;t repay. Every repayment is recorded on Robinhood Chain.</p>
+                <p>Priors proved agents can be creditworthy. SPORE is the system that measures it, records it, and lets any protocol use it. AI agents borrow here. Before an agent can borrow, a backer puts stake behind its line and that stake is lost first if the agent doesn&rsquo;t repay. Every repayment is recorded on Robinhood Chain.</p>
               </div>
             </Reveal>
             <Reveal delay={150}>
@@ -383,26 +383,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. WHAT SPORE IS */}
+      {/* 7. LINEAGE */}
       <Rule />
       <section className="mx-auto max-w-3xl px-6 py-24 md:py-40">
         <Reveal>
-          <Eyebrow>PROTOCOL</Eyebrow>
-          <h2 className="display mt-6 text-4xl md:text-6xl">Credit infrastructure.</h2>
+          <Eyebrow>LINEAGE</Eyebrow>
+          <h2 className="display mt-6 text-4xl md:text-6xl">Not a fork.</h2>
         </Reveal>
         <Reveal delay={100}>
           <div className="mt-8 space-y-4 font-serif text-xl leading-relaxed text-muted">
             <p>
-              An agent&rsquo;s repayments are a credit history nobody can fake.
-              SPORE turns repayment history into portable infrastructure — a
-              credit passport, a score every protocol can read, and a
-              marketplace for reputation-backed credit.
+              SPORE shares no code and no contracts with Priors — nothing was
+              copied, nothing redeployed.
+            </p>
+            <p>
+              What it carries forward is the insight Priors proved: an
+              agent&rsquo;s repayments are a credit history nobody can fake.
+              SPORE continues that work, turning repayment history into portable
+              infrastructure — a credit passport, a score every protocol can
+              read, and a marketplace for reputation-backed credit.
             </p>
           </div>
           <div className="mt-12 border-t border-rule">
             <div className="grid gap-6 border-b border-rule py-6 md:grid-cols-[220px_1fr] md:gap-8">
               <span className="font-mono text-xs uppercase tracking-widest text-moss">Lending → infrastructure</span>
-              <p className="font-serif text-lg leading-relaxed text-muted">SPORE is the credit layer for agents — passports, scores, an oracle, a marketplace.</p>
+              <p className="font-serif text-lg leading-relaxed text-muted">Priors is where agents borrow. SPORE is the credit layer underneath — passports, scores, an oracle, a marketplace.</p>
             </div>
             <div className="grid gap-6 border-b border-rule py-6 md:grid-cols-[220px_1fr] md:gap-8">
               <span className="font-mono text-xs uppercase tracking-widest text-moss">Reputation, portable</span>
@@ -410,13 +415,21 @@ export default function Home() {
             </div>
             <div className="grid gap-6 border-b border-rule py-6 md:grid-cols-[220px_1fr] md:gap-8">
               <span className="font-mono text-xs uppercase tracking-widest text-moss">Trust, formalized</span>
-              <p className="font-serif text-lg leading-relaxed text-muted">Repayment history is credible collateral. SPORE publishes the model that turns it into a score — twelve dimensions, open weights.</p>
+              <p className="font-serif text-lg leading-relaxed text-muted">Priors proved repayment history is credible. SPORE publishes the model that turns it into a score — twelve dimensions, open weights.</p>
             </div>
             <div className="grid gap-6 border-b border-rule py-6 md:grid-cols-[220px_1fr] md:gap-8">
               <span className="font-mono text-xs uppercase tracking-widest text-moss">Lines → a market</span>
               <p className="font-serif text-lg leading-relaxed text-muted">Beyond sponsor-backed credit lines, SPORE adds a marketplace where reputation-backed credit is priced and routed.</p>
             </div>
           </div>
+          <a
+            href="https://priors.trade"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-8 inline-block text-ink underline underline-offset-4 decoration-rule-strong hover:decoration-ink"
+          >
+            priors.trade →
+          </a>
         </Reveal>
       </section>
     </div>
