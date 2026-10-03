@@ -93,6 +93,8 @@ services:
         value: 0x0000000000000000000000000000000000000000
       - key: ASSET_DECIMALS
         value: 18
+      - key: ARTIFACTS_DIR
+        value: /opt/render/project/src/backend/indexer/abis
 
   - type: worker
     name: spore-score-engine
