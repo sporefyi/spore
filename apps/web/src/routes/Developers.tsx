@@ -210,8 +210,8 @@ export default function Developers() {
           </h2>
           <div className="mt-6">
             <UnavailableState
-              title="Oracle not deployed"
-              copy="The oracle contract is not deployed, so these endpoints resolve to nothing yet. The shapes above are the intended interface and may change before anything ships."
+              title="Oracle live"
+              copy="The ScoreOracle is deployed on Robinhood Chain and its publisher is live. These endpoints resolve against real on-chain state; no scores have been published yet."
             />
             <p className="mt-4 text-sm text-muted">
               To see what the protocol is meant to do, read{' '}
