@@ -42,6 +42,12 @@ function Section({ n, title, children }: { n: string; title: string; children: R
   );
 }
 
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function Sparkline({ points }: { points: ScorePoint[] }) {
   const W = 600;
   const H = 160;
@@ -83,9 +89,9 @@ function Sparkline({ points }: { points: ScorePoint[] }) {
         )}
       </svg>
       <div className="tnum mt-3 flex justify-between gap-4 font-mono text-xs text-faint">
-        <span className="truncate">{points[0].t}</span>
+        <span className="truncate">{fmtDate(points[0].t)}</span>
         <span className="truncate">
-          {last.t} · {last.score}
+          {fmtDate(last.t)} · {last.score}
         </span>
       </div>
     </div>
@@ -247,7 +253,12 @@ export default function Passport() {
               <Stat label="Borrowed to date" value={usd(loaded.history.borrowedUsd)} />
             </Section>
 
-            <Section n="05" title="Defaults">
+            <Section n="05" title="Backing">
+              <Stat label="Staked" value={usd(loaded.economics.stakedUsd)} />
+              <Stat label="Backers" value={num(loaded.economics.backers)} />
+            </Section>
+
+            <Section n="06" title="Defaults">
               {loaded.history.defaults == null ? (
                 <UnavailableState />
               ) : (
@@ -255,7 +266,7 @@ export default function Passport() {
               )}
             </Section>
 
-            <Section n="06" title="Score trend">
+            <Section n="07" title="Score trend">
               {history === 'loading' && <LoadingState label="Reading the ledger…" />}
               {history === 'error' && <UnavailableState />}
               {Array.isArray(history) && history.length === 0 && (
