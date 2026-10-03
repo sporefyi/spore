@@ -250,6 +250,16 @@ export function Footer() {
             © 2026 SPORE
           </span>
           <span className="font-mono text-[12px] tracking-widest text-faint">
+            An independent continuation of{' '}
+            <a
+              href="https://priors.trade"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 hover:text-muted"
+            >
+              Priors
+            </a>{' '}
+            — not a fork. ·{' '}
             <a
               href="https://robinhoodchain.blockscout.com/address/0x6902670409c4FA3a75C39A734c69beAEEBcF9729"
               target="_blank"
