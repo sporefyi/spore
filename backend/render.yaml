@@ -153,6 +153,6 @@ services:
 databases:
   - name: spore-postgres
     region: singapore
-    plan: starter
+    plan: basic-256mb
     databaseName: spore
     user: spore
