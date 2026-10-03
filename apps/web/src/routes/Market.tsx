@@ -10,10 +10,10 @@ import {
 const CATEGORIES: { name: string; live: boolean }[] = [
   { name: 'AI inference', live: true },
   { name: 'GPU compute', live: false },
-  { name: 'APIs', live: false },
-  { name: 'Data', live: false },
+  { name: 'APIs', live: true },
+  { name: 'Data', live: true },
   { name: 'Storage', live: true },
-  { name: 'RPC', live: false },
+  { name: 'RPC', live: true },
 ];
 
 const DESTINATIONS: string[] = ['API', 'COMPUTE', 'DATA', 'RPC', 'STORAGE'];
@@ -103,7 +103,7 @@ export default function Market() {
           </div>
 
           <p className="mt-10 max-w-2xl font-sans text-sm leading-relaxed text-muted">
-            One merchant integration is live: SPORE Storage — pay 1 USDG, pin a file on IPFS.
+            Five merchant integrations are live: SPORE Vault (storage, 1 USDG/file), SPORE Data (on-chain queries, 0.1 USDG), SPORE Search (web search, 0.2 USDG), SPORE Inference (AI, 0.5 USDG), and SPORE RPC (metered access, 5 USDG/30 days).
           </p>
         </Reveal>
 
