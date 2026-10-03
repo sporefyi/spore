@@ -7,6 +7,9 @@ import { registerAgents } from "./routes/agents.js";
 import { registerLedger } from "./routes/ledger.js";
 import { registerOnboard } from "./routes/onboard.js";
 import { registerMarket } from "./routes/market.js";
+import { registerMarketData } from "./routes/market-data.js";
+import { registerMarketRpc } from "./routes/market-rpc.js";
+import { registerMarketSearch } from "./routes/market-search.js";
 
 export function registerRoutes(app: FastifyInstance, deps: AppDeps): void {
   app.register(
@@ -17,7 +20,11 @@ export function registerRoutes(app: FastifyInstance, deps: AppDeps): void {
       registerAgents(v1, deps);
       registerLedger(v1, deps);
       registerOnboard(v1, deps);
-      registerMarket(v1, deps);    },
+      registerMarket(v1, deps);
+      registerMarketData(v1, deps);
+      registerMarketRpc(v1, deps);
+      registerMarketSearch(v1, deps);
+    },
     { prefix: "/api/v1" },
   );
 
