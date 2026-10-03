@@ -11,20 +11,17 @@ import { ethers } from "ethers";
  *
  * 1. Validates inputs + rate-limits per IP.
  * 2. Verifies paymentTx on-chain: a USDG Transfer of >= 1 USDG to MERCHANT.
- *    Each tx hash is accepted once (UNIQUE constraint) — no double-spend.
- * 3. Queues the pin job in storage_pins; a VM worker polls pending jobs,
- *    pins via Pinata (credential lives on the VM), and marks them done.
+ *    Each tx hash is accepted once — no double-spend.
+ * 3. Pins the file to Pinata directly (PINATA_JWT env) and returns the CID.
  *
- * GET /api/v1/market/storage/pin/:id — job status + CID.
- * GET /api/v1/market/storage/pending — worker: list pending jobs (needs WORKER_SECRET).
- * POST /api/v1/market/storage/complete — worker: { id, cid } or { id, error }.
+ * GET /api/v1/market/storage/pin/:id — legacy job status lookup (queued pins).
  */
 
 const MERCHANT = "0x4c7cfbd388249f3c3027c52635cf70bb78084ed5";
 const PRICE = 1_000_000n; // 1 USDG (6 decimals)
 const MAX_BYTES = 10 * 1024 * 1024;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_MAX = 10;
 
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
@@ -36,13 +33,6 @@ function rateLimited(ip: string): boolean {
   arr.push(now);
   hits.set(ip, arr);
   return false;
-}
-
-function workerAuthed(req: { headers: Record<string, string | string[] | undefined> }): boolean {
-  const secret = process.env.WORKER_SECRET ?? "";
-  if (!secret) return false;
-  const got = req.headers["x-worker-secret"];
-  return got === secret;
 }
 
 /** Verify paymentTx contains a USDG transfer of >= PRICE to MERCHANT. Returns payer or null. */
@@ -60,7 +50,6 @@ async function verifyPayment(rpcUrl: string, asset: string, paymentTx: string): 
   for (const log of receipt.logs) {
     if (log.address.toLowerCase() !== assetLc) continue;
     if (log.topics[0]?.toLowerCase() !== TRANSFER_TOPIC) continue;
-    // topics[1] = from, topics[2] = to (both 32-byte padded)
     const to = ("0x" + log.topics[2]?.slice(-40)).toLowerCase();
     if (to !== merchantLc) continue;
     const value = BigInt(log.data);
@@ -68,6 +57,27 @@ async function verifyPayment(rpcUrl: string, asset: string, paymentTx: string): 
     return ("0x" + log.topics[1]?.slice(-40)).toLowerCase();
   }
   return null;
+}
+
+/** Pin a buffer to Pinata, return the CID. */
+async function pinToPinata(jwt: string, fileName: string, buf: Buffer): Promise<string> {
+  const form = new FormData();
+  form.append("file", new Blob([buf], { type: "application/octet-stream" }), fileName);
+  form.append("pinataMetadata", JSON.stringify({ name: `spore-storage-${fileName}` }));
+  form.append("pinataOptions", JSON.stringify({ cidVersion: 1 }));
+  const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${jwt}` },
+    body: form,
+    signal: AbortSignal.timeout(120000),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`pinata ${res.status}: ${t.slice(0, 200)}`);
+  }
+  const j = (await res.json()) as { IpfsHash?: string };
+  if (!j.IpfsHash) throw new Error("pinata: no IpfsHash in response");
+  return j.IpfsHash;
 }
 
 export function registerMarket(v1: FastifyInstance, deps: AppDeps): void {
@@ -93,26 +103,44 @@ export function registerMarket(v1: FastifyInstance, deps: AppDeps): void {
       return sendError(reply, 400, "bad_request", "file must be 1 byte - 10 MB");
     }
 
+    const jwt = process.env.PINATA_JWT ?? "";
+    if (!jwt) return sendError(reply, 503, "not_configured", "storage merchant not configured");
+
     const payer = await verifyPayment(config.rpcUrl, config.assetAddress, paymentTx);
     if (!payer) {
       return sendError(reply, 402, "payment_not_found", "no confirmed 1 USDG payment to merchant in that tx");
     }
 
-    try {
-      const r = await db.query(
-        `INSERT INTO storage_pins (file_name, file_data, payment_tx, payer, status)
-         VALUES ($1, $2, $3, $4, 'pending') RETURNING id`,
-        [fileName, buf, paymentTx.toLowerCase(), payer],
-      );
-      const id = r.rows[0].id;
-      logger.info({ id, payer }, "storage pin queued");
-      return reply.send({ id, status: "pending", price: "1000000", merchant: MERCHANT });
-    } catch (e: unknown) {
-      if ((e as { code?: string }).code === "23505") {
-        return sendError(reply, 409, "tx_reused", "this payment tx was already used");
-      }
-      throw e;
+    // Idempotency: one pin per payment tx.
+    const dup = await db.query(`SELECT id, cid FROM storage_pins WHERE payment_tx = $1`, [paymentTx.toLowerCase()]);
+    if (dup.rows.length > 0 && dup.rows[0].cid) {
+      const j = dup.rows[0];
+      return reply.send({ id: j.id, status: "done", cid: j.cid, ipfsUrl: `https://gateway.pinata.cloud/ipfs/${j.cid}` });
     }
+
+    let cid: string;
+    try {
+      cid = await pinToPinata(jwt, fileName, buf);
+    } catch (e) {
+      logger.error({ err: e }, "pinata pin failed");
+      return sendError(reply, 502, "pin_failed", "could not pin file");
+    }
+
+    const r = await db.query(
+      `INSERT INTO storage_pins (file_name, file_data, payment_tx, payer, status, cid)
+       VALUES ($1, $2, $3, $4, 'done', $5)
+       ON CONFLICT (payment_tx) DO UPDATE SET cid = EXCLUDED.cid, status = 'done'
+       RETURNING id`,
+      [fileName, buf, paymentTx.toLowerCase(), payer, cid],
+    );
+    logger.info({ id: r.rows[0].id, cid, payer }, "storage pin complete");
+    return reply.send({
+      id: r.rows[0].id,
+      status: "done",
+      cid,
+      ipfsUrl: `https://gateway.pinata.cloud/ipfs/${cid}`,
+      merchant: MERCHANT,
+    });
   });
 
   v1.get("/market/storage/pin/:id", async (req, reply) => {
@@ -133,38 +161,5 @@ export function registerMarket(v1: FastifyInstance, deps: AppDeps): void {
       ipfsUrl: j.cid ? `https://gateway.pinata.cloud/ipfs/${j.cid}` : null,
       createdAt: j.created_at,
     });
-  });
-
-  // Worker endpoints (shared secret).
-  v1.get("/market/storage/pending", async (req, reply) => {
-    if (!workerAuthed(req)) return sendError(reply, 401, "unauthorized", "bad worker secret");
-    const r = await db.query(
-      `SELECT id, file_name, encode(file_data, 'base64') AS file_data, payment_tx, payer
-       FROM storage_pins WHERE status = 'pending' ORDER BY id LIMIT 10`,
-    );
-    return reply.send({ items: r.rows });
-  });
-
-  v1.post("/market/storage/complete", async (req, reply) => {
-    if (!workerAuthed(req)) return sendError(reply, 401, "unauthorized", "bad worker secret");
-    const body = req.body as Record<string, unknown> | undefined;
-    const id = Number(body?.id);
-    const cid = typeof body?.cid === "string" ? body.cid : "";
-    const error = typeof body?.error === "string" ? body.error.slice(0, 500) : "";
-    if (!Number.isInteger(id) || id <= 0 || (!cid && !error)) {
-      return sendError(reply, 400, "bad_request", "id and cid or error required");
-    }
-    if (cid) {
-      await db.query(
-        `UPDATE storage_pins SET status = 'done', cid = $2, updated_at = NOW() WHERE id = $1`,
-        [id, cid],
-      );
-    } else {
-      await db.query(
-        `UPDATE storage_pins SET status = 'failed', error = $2, updated_at = NOW() WHERE id = $1`,
-        [id, error],
-      );
-    }
-    return reply.send({ ok: true });
   });
 }
