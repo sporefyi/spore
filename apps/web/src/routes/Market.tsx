@@ -156,7 +156,7 @@ export default function Market() {
         <div className="mt-10">
           <UnavailableState
             title="Market not activated"
-            copy="Routing settles through contracts that are not deployed. Until they are, there are no merchants to route to, no credit to spend, and nothing on this page that moves value."
+            copy="Routing settles through the CreditManager on Robinhood Chain. There are no merchants to route to yet and no credit has moved through this page — when routing activates, every settlement will link to its transaction."
           />
         </div>
       </section>
