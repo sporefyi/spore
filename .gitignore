@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# builds
+dist/
+build/
+.next/
+out/
+coverage/
+
+# env & secrets (never commit real values)
+.env
+.env.local
+*.pem
+*.key
+identity.json
+
+# logs & caches
+*.log
+.cache/
+.turbo/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/

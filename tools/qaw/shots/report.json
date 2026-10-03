@@ -1,0 +1,128 @@
+[
+  {
+    "route": "/",
+    "vp": "desktop",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 1,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/agents",
+    "vp": "desktop",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/passport/demo-agent",
+    "vp": "desktop",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/developers",
+    "vp": "desktop",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/protocol",
+    "vp": "desktop",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/market",
+    "vp": "desktop",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/connect",
+    "vp": "desktop",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/",
+    "vp": "mobile",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 1,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/agents",
+    "vp": "mobile",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/passport/demo-agent",
+    "vp": "mobile",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/developers",
+    "vp": "mobile",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/protocol",
+    "vp": "mobile",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/market",
+    "vp": "mobile",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  },
+  {
+    "route": "/connect",
+    "vp": "mobile",
+    "h1": 1,
+    "overflow": false,
+    "canvases": 0,
+    "webgl": "available",
+    "errors": []
+  }
+]

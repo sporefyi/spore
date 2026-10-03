@@ -1,0 +1,158 @@
+# Render Blueprint for the SPORE backend.
+# Deploys: API (web) + indexer (worker) + score-engine (worker) +
+#          oracle-publisher (worker, dry-run) + managed Postgres.
+# Apply via the Render dashboard (New > Blueprint) or the Render API.
+# Region: Singapore. Plans: starter across the board (~$35/mo all-in).
+
+services:
+  - type: web
+    name: spore-api
+    runtime: node
+    region: singapore
+    plan: starter
+    rootDir: backend
+    buildCommand: npm ci --workspaces --include-workspace-root && npm run build --workspaces
+    startCommand: node api/dist/index.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spore-postgres
+          property: connectionString
+      - key: RPC_URL
+        value: https://example-rpc.robinhoodchain.example
+      - key: CHAIN_ID
+        value: 4663
+      - key: LOG_LEVEL
+        value: info
+      - key: DEPLOY_BLOCK
+        value: 0
+      - key: CONFIRMATIONS
+        value: 12
+      - key: SCORE_MODEL_VERSION
+        value: 1
+      # Contract addresses: all zero until contracts are deployed.
+      # Set to real addresses (and a real RPC_URL) at deploy time.
+      - key: CONTRACT_REGISTRY
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_CREDIT_MANAGER
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_BACKER_VAULT
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_SCORE_ORACLE
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_FEE_ROUTER
+        value: 0x0000000000000000000000000000000000000000
+      - key: ASSET_ADDRESS
+        value: 0x0000000000000000000000000000000000000000
+      - key: ASSET_DECIMALS
+        value: 18
+
+  - type: worker
+    name: spore-indexer
+    runtime: node
+    region: singapore
+    plan: starter
+    rootDir: backend
+    buildCommand: npm ci --workspaces --include-workspace-root && npm run build --workspaces
+    startCommand: node indexer/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spore-postgres
+          property: connectionString
+      - key: RPC_URL
+        value: https://example-rpc.robinhoodchain.example
+      - key: CHAIN_ID
+        value: 4663
+      - key: LOG_LEVEL
+        value: info
+      - key: DEPLOY_BLOCK
+        value: 0
+      - key: CONFIRMATIONS
+        value: 12
+      - key: INDEXER_POLL_MS
+        value: 4000
+      - key: CONTRACT_REGISTRY
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_CREDIT_MANAGER
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_BACKER_VAULT
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_SCORE_ORACLE
+        value: 0x0000000000000000000000000000000000000000
+      - key: CONTRACT_FEE_ROUTER
+        value: 0x0000000000000000000000000000000000000000
+      - key: ASSET_ADDRESS
+        value: 0x0000000000000000000000000000000000000000
+      - key: ASSET_DECIMALS
+        value: 18
+
+  - type: worker
+    name: spore-score-engine
+    runtime: node
+    region: singapore
+    plan: starter
+    rootDir: backend
+    buildCommand: npm ci --workspaces --include-workspace-root && npm run build --workspaces
+    startCommand: node score-engine/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spore-postgres
+          property: connectionString
+      - key: LOG_LEVEL
+        value: info
+      - key: SCORE_MODEL_VERSION
+        value: 1
+      - key: SCORE_INTERVAL_MS
+        value: 300000
+      - key: ASSET_DECIMALS
+        value: 18
+
+  - type: worker
+    name: spore-oracle-publisher
+    runtime: node
+    region: singapore
+    plan: starter
+    rootDir: backend
+    buildCommand: npm ci --workspaces --include-workspace-root && npm run build --workspaces
+    startCommand: node oracle-publisher/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spore-postgres
+          property: connectionString
+      - key: LOG_LEVEL
+        value: info
+      # Dry-run: watches and logs what it WOULD publish. Flip to false and set
+      # ORACLE_PRIVATE_KEY (via Render secret, never in this file) at contract time.
+      - key: DRY_RUN
+        value: "true"
+      - key: RPC_URL
+        value: https://example-rpc.robinhoodchain.example
+      - key: CHAIN_ID
+        value: 4663
+      - key: ORACLE_PUBLISH_INTERVAL_MS
+        value: 300000
+      - key: CONTRACT_SCORE_ORACLE
+        value: 0x0000000000000000000000000000000000000000
+
+databases:
+  - name: spore-postgres
+    region: singapore
+    plan: starter
+    databaseName: spore
+    user: spore

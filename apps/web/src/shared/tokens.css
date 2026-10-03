@@ -1,0 +1,29 @@
+/*
+ * SPORE v3 — design tokens
+ * Dark editorial theme: warm-black ground, cream ink, hairline rules.
+ * Accents are rationed: moss (primary), fungal orange (secondary),
+ * ember (tiny muted red). Almost monochromatic by design.
+ * Replaces all v2 light-theme tokens.
+ */
+
+:root {
+  /* Surface & text */
+  --bg: #14110d;          /* warm black, never pure #000 */
+  --ink: #f0e9da;         /* cream / off-white */
+  --muted: #a89f8d;       /* body: muted warm gray */
+  --faint: #8a8069;       /* captions, metadata, disabled (AA) */
+
+  /* Rules (used extensively) */
+  --rule: #2e2922;        /* thin warm-gray hairline */
+  --rule-strong: #4a4337; /* emphasized dividers, table heads */
+
+  /* Accents (sparing) */
+  --moss: #8fae5a;        /* primary: mushroom cap green */
+  --fungal: #d9772b;      /* secondary: gill orange */
+  --ember: #c4644f;       /* caution accent: honesty labels (NOT YET LIVE, ILLUSTRATIVE, FUTURE), errors, negatives (AA) */
+
+  /* Typography */
+  --font-serif: "EB Garamond", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}

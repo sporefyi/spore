@@ -1,0 +1,36 @@
+{
+  "description": "SPORE off-chain backend: indexer, API, score engine, oracle publisher",
+  "engines": {
+    "node": ">=20"
+  },
+  "name": "@spore/backend",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "db:migrate": "psql \"$DATABASE_URL\" -f db/migrations/001_schema.sql",
+    "typecheck": "tsc --noEmit -p tsconfig.base.json",
+    "test": "node --test test/integration.test.mjs test/api-contract.test.mjs && npx vitest run test/score-parity.test.ts"
+  },
+  "version": "0.1.0",
+  "workspaces": [
+    "common",
+    "indexer",
+    "api",
+    "score-engine",
+    "oracle-publisher"
+  ],
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "dotenv": "^18.0.5",
+    "ethers": "^6.17.0",
+    "fastify": "^5.12.5",
+    "pg": "^8.23.1",
+    "pino": "^10.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/pg": "^8.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
