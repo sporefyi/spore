@@ -257,7 +257,7 @@ export class IndexerProvider implements DataProvider {
         identity: {
           agentId: typeof identity.agentId === 'string' ? identity.agentId : agentId,
           erc8004Id: null,
-          name: null,
+          name: typeof identity.metadataUri === 'string' && identity.metadataUri.length > 0 ? identity.metadataUri : null,
           ageDays: numOrNull(identity.ageDays),
           chains: ['robinhood'],
         },
@@ -275,6 +275,8 @@ export class IndexerProvider implements DataProvider {
           revenue90dUsd: null,
           utilization: numOrNull(economics.utilization),
           debtToRevenue: null,
+          stakedUsd: moneyOrNull(economics.vouched, d),
+          backers: numOrNull(economics.backers),
         },
       };
     } catch {
@@ -389,6 +391,8 @@ export class DemoProvider implements DataProvider {
         revenue90dUsd: 6420,
         utilization: 0.21,
         debtToRevenue: 0.048,
+        stakedUsd: 1200,
+        backers: 4,
       },
     });
   }
