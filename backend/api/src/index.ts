@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import type { FastifyBaseLogger } from "fastify";
+import cors from "@fastify/cors";
 import { access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { loadApiConfig } from "./config.js";
@@ -45,6 +46,13 @@ async function main(): Promise<void> {
   }
 
   const app = Fastify({ loggerInstance: logger as unknown as FastifyBaseLogger });
+
+  const corsOrigins = (process.env.CORS_ORIGINS ??
+    "https://spore.fyi,https://www.spore.fyi,https://spore-credit.netlify.app")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s !== "");
+  await app.register(cors, { origin: corsOrigins });
 
   registerRoutes(app, { db, config, logger });
 
