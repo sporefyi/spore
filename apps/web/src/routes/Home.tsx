@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import VoxelMushroomFallback from '../shared/components/VoxelMushroomFallback'
 import { MechanismSection } from '../shared/components/MechanismDiagram'
@@ -10,6 +10,9 @@ import {
   Reveal,
   LedgerTable,
 } from '../shared/components/primitives'
+import { provider } from '../shared/data/providers'
+import type { NetworkStats } from '../shared/types'
+import SporeTokenBadge from '../shared/components/SporeTokenBadge'
 
 const VoxelMushroom = lazy(() => import('../shared/components/VoxelMushroom'))
 
@@ -80,6 +83,21 @@ export default function Home() {
   useEffect(() => {
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' })
   }, [hash])
+  const [stats, setStats] = useState<NetworkStats | null>(null)
+  useEffect(() => {
+    let live = true
+    provider
+      .getNetworkStats()
+      .then((st) => {
+        if (live) setStats(st)
+      })
+      .catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [])
+  const fmtUsd = (v: number | null) =>
+    v === null ? '—' : `$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
   return (
     <div className="bg-bg text-ink overflow-x-hidden">
       {/* 1. HERO — Priors composition: text left, organism right */}
@@ -106,6 +124,12 @@ export default function Home() {
                   Launch an agent
                 </Link>
                 <Link
+                  to="/connect"
+                  className="border border-fungal px-6 py-3 font-mono text-[13px] uppercase tracking-[0.18em] text-fungal transition-colors hover:bg-fungal hover:text-bg"
+                >
+                  Bring your Orbio agent
+                </Link>
+                <Link
                   to="/agents"
                   className="text-ink underline underline-offset-4 decoration-rule-strong hover:decoration-ink"
                 >
@@ -118,6 +142,7 @@ export default function Home() {
               >
                 How credit works →
               </Link>
+              <SporeTokenBadge />
             </Reveal>
           </div>
 
@@ -144,10 +169,26 @@ export default function Home() {
       </div>
       <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
         <div className="grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-4">
-          <Stat label="Agents" value="—" hint="No agents registered" />
-          <Stat label="Credit issued" value="—" hint="Nothing issued" />
-          <Stat label="Repaid" value="—" hint="Nothing repaid" />
-          <Stat label="Network score" value="—" hint="No scores published" />
+          <Stat
+            label="Agents"
+            value={stats ? String(stats.agents ?? '—') : '—'}
+            hint={stats ? 'Registered on-chain' : 'Reading the ledger…'}
+          />
+          <Stat
+            label="Credit issued"
+            value={stats ? fmtUsd(stats.creditIssuedUsd) : '—'}
+            hint={stats ? 'Across all lines' : 'Reading the ledger…'}
+          />
+          <Stat
+            label="Repaid"
+            value={stats ? fmtUsd(stats.repaidUsd) : '—'}
+            hint={stats ? 'Settled repayments' : 'Reading the ledger…'}
+          />
+          <Stat
+            label="Active credit"
+            value={stats ? fmtUsd(stats.activeCreditUsd) : '—'}
+            hint={stats ? 'Currently drawn' : 'Reading the ledger…'}
+          />
         </div>
       </section>
 
@@ -337,7 +378,7 @@ export default function Home() {
             rows={LEDGER_ROWS}
             keyOf={(r) => r.id}
             emptyTitle="No entries yet"
-            emptyCopy="The ledger is live and empty. Every row will trace to a real on-chain transaction — until the contracts deploy, there is nothing to list."
+            emptyCopy="The ledger is live. Every row traces to a real on-chain transaction — the first entries are still settling."
           />
         </div>
       </section>
