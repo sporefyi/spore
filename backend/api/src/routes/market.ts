@@ -62,7 +62,7 @@ async function verifyPayment(rpcUrl: string, asset: string, paymentTx: string): 
 /** Pin a buffer to Pinata, return the CID. */
 async function pinToPinata(jwt: string, fileName: string, buf: Buffer): Promise<string> {
   const form = new FormData();
-  form.append("file", new Blob([buf], { type: "application/octet-stream" }), fileName);
+  form.append("file", new Blob([new Uint8Array(buf)], { type: "application/octet-stream" }), fileName);
   form.append("pinataMetadata", JSON.stringify({ name: `spore-storage-${fileName}` }));
   form.append("pinataOptions", JSON.stringify({ cidVersion: 1 }));
   const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
