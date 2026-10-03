@@ -13,7 +13,7 @@ services:
     rootDir: backend
     buildCommand: npm ci --workspaces --include-workspace-root && npm run build --workspaces
     startCommand: node api/dist/index.js
-    healthCheckPath: /health
+    healthCheckPath: /api/v1/health
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
