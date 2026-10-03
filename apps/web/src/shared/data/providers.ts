@@ -48,7 +48,7 @@ export class MainnetProvider implements DataProvider {
   readonly label: string = 'Mainnet';
 
   private unavailable<T>(what: string): Promise<T> {
-    // Protocol not yet deployed: resolve honest nulls, never fabricated data.
+    // Protocol deployed: MainnetProvider is the fallback when no indexer URL is set.
     void what;
     return Promise.resolve(null as unknown as T);
   }
