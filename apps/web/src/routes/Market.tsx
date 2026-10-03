@@ -8,7 +8,7 @@ import {
 } from '../shared/components/primitives';
 
 const CATEGORIES: { name: string; live: boolean }[] = [
-  { name: 'AI inference', live: false },
+  { name: 'AI inference', live: true },
   { name: 'GPU compute', live: false },
   { name: 'APIs', live: false },
   { name: 'Data', live: false },
