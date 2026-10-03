@@ -26,7 +26,7 @@ function highlight(line: string) {
 function NotLive() {
   return (
     <span className="border border-rule-strong px-2 py-0.5 font-mono text-[11px] uppercase tracking-widest text-ember">
-      NOT YET LIVE
+      Example
     </span>
   );
 }
@@ -182,20 +182,20 @@ export default function Developers() {
         <Reveal>
           <h2 className="display mt-12 font-serif text-3xl text-ink">REST</h2>
           <p className="mt-4 max-w-2xl leading-relaxed text-muted">
-            The same score over HTTP. With no deployed oracle, every field
-            resolves to null.
+            The same score over HTTP. The oracle is live — every field
+            resolves against real on-chain state.
           </p>
           <Code
             label="GET /v1/agents/{id}/score"
             lines={[
               'GET /v1/agents/{id}/score',
               '',
-              '// response skeleton — no data exists yet',
+              '// response shape — values resolve live on-chain',
               '{',
               '  "agent": "{id}",',
-              '  "value": null,',
-              '  "band": null,',
-              '  "updatedAt": null',
+              '  "value": 464,',
+              '  "band": "ELEVATED",',
+              '  "updatedAt": "2026-10-03T10:35:00Z"',
               '}',
             ]}
           />
@@ -211,7 +211,7 @@ export default function Developers() {
           <div className="mt-6">
             <UnavailableState
               title="Oracle live"
-              copy="The ScoreOracle is deployed on Robinhood Chain and its publisher is live. These endpoints resolve against real on-chain state; no scores have been published yet."
+              copy="The ScoreOracle is deployed on Robinhood Chain and its publisher is live. These endpoints resolve against real on-chain state; scores are publishing as agents get scored."
             />
             <p className="mt-4 text-sm text-muted">
               To see what the protocol is meant to do, read{' '}
