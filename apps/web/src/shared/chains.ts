@@ -2,20 +2,21 @@
  * CHAIN_CONFIG — the single blockchain configuration for SPORE.
  * Do not scatter chain ids, RPC urls, or contract addresses anywhere else.
  *
- * STATUS: SPORE contracts are NOT deployed on any chain yet.
- * Every contract address is null and `protocolActive` is false until a real
- * deployment exists. UI must treat null as "Protocol module not yet activated".
+ * STATUS: SPORE v1 contracts are DEPLOYED on Robinhood Chain (mainnet).
+ * Deployed 2026-10-03 by 0x4C7cFbd388249f3c3027c52635cf70bB78084Ed5.
+ * UI treats null as "Protocol module not yet activated".
  * RPC urls come from environment variables; never commit secrets.
  *
- * DECLARED CHAIN: Robinhood Chain (chain id 4663). This is the chain SPORE
- * will deploy to. It is the only entry in CHAINS.
+ * DECLARED CHAIN: Robinhood Chain (chain id 4663). It is the only entry
+ * in CHAINS.
  */
 
 export interface ChainContracts {
-  creditPool: string | null;
-  creditOracle: string | null;
-  creditRouter: string | null;
-  identityRegistry: string | null;
+  registry: string | null; // SporeRegistry — agent identity
+  creditManager: string | null; // CreditManager — credit lines, borrow, repay
+  backerVault: string | null; // BackerVault — backer stakes
+  scoreOracle: string | null; // ScoreOracle — published scores
+  feeRouter: string | null; // FeeRouter — fee splits
 }
 
 export interface ChainConfig {
@@ -29,13 +30,6 @@ export interface ChainConfig {
   contracts: ChainContracts;
 }
 
-const NULL_CONTRACTS: ChainContracts = {
-  creditPool: null,
-  creditOracle: null,
-  creditRouter: null,
-  identityRegistry: null,
-};
-
 export const CHAINS: ChainConfig[] = [
   {
     slug: 'robinhood',
@@ -44,7 +38,13 @@ export const CHAINS: ChainConfig[] = [
     rpcEnvVar: 'VITE_RPC_ROBINHOOD',
     explorerUrl: 'https://robinhoodchain.blockscout.com',
     nativeCurrency: 'ETH',
-    contracts: { ...NULL_CONTRACTS },
+    contracts: {
+      registry: '0x6902670409c4FA3a75C39A734c69beAEEBcF9729',
+      creditManager: '0x3348217314cA5641531005A4CFD7b20275Fcb7a9',
+      backerVault: '0xF574091D96518F065f772a1231EBB9dC1AaB2694',
+      scoreOracle: '0x31088a5516816ffb050846f6Ae4d460EB32000c4',
+      feeRouter: '0x8F921bF51D603B5ACa827C0adA822aF5259057cc',
+    },
   },
 ];
 
@@ -66,4 +66,9 @@ export function rpcUrl(chain: ChainConfig): string | null {
     chain.rpcEnvVar
   ];
   return v && v.length > 0 ? v : null;
+}
+
+/** Blockscout address URL for the primary chain. */
+export function explorerAddressUrl(address: string): string {
+  return `${PRIMARY_CHAIN.explorerUrl}/address/${address}`;
 }
