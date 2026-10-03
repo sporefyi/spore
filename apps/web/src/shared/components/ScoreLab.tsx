@@ -126,17 +126,98 @@ export default function ScoreLab() {
       {/* live equation */}
       <div className="mt-12 border-y border-rule py-8">
         <div className="font-serif text-3xl text-ink md:text-4xl">
-          S = <span className="italic text-moss">Σ</span> w<sub>i</sub>·x<sub>i</sub>
+          S = <span className="sigma-breathe italic text-moss">Σ</span> w<sub>i</sub>·x<sub>i</sub>
           <span className="tnum"> = {shown}</span>
         </div>
         <div className="mt-4 overflow-x-auto">
           <code className="whitespace-nowrap font-mono text-[13px] leading-relaxed text-muted">
-            S = {expansion} = <span className="text-ink">{score.toFixed(1)}</span>
+            S = {expansion.split(' + ').map((term, i) => (
+              <span key={i}>
+                <span className="term-shimmer" style={{ animationDelay: `${i * 0.25}s` }}>{term}</span>
+                {i < expansion.split(' + ').length - 1 && ' + '}
+              </span>
+            ))} = <span className="text-ink">{score.toFixed(1)}</span>
           </code>
         </div>
         <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
           Model v0.1 · x<sub>5</sub>, x<sub>11</sub> unscored — maximum attainable 890
         </p>
+      </div>
+
+      {/* for the geeks: infographics */}
+      <div className="mt-12">
+        <Eyebrow>For the geeks</Eyebrow>
+        <div className="mt-8 grid gap-12 md:grid-cols-2">
+          {/* weight distribution */}
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
+              Weight distribution · Σw = 1.00
+            </p>
+            <div className="mt-4 space-y-2">
+              {DIMS.map((d, i) => (
+                <div key={d.name} className="geek-bar flex items-center gap-3">
+                  <span className="w-36 truncate font-mono text-[11px] text-muted" title={d.name}>
+                    {d.name}
+                  </span>
+                  <div className="h-[6px] flex-1 bg-rule">
+                    <div
+                      className={cx('weight-bar h-[6px]', d.kind === 'future' ? 'bg-rule-strong' : 'bg-moss')}
+                      style={{ width: `${d.w * 100}%`, animationDelay: `${i * 0.06}s` }}
+                    />
+                  </div>
+                  <span className="tnum w-10 text-right font-mono text-[11px] text-faint">
+                    {d.w.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* risk band spectrum */}
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
+              Risk spectrum · you are here
+            </p>
+            <div className="mt-4">
+              <div className="relative h-3 bg-rule">
+                <div
+                  className="absolute inset-y-0 left-0"
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(to right, #c4644f 0%, #c4644f 30%, #d9772b 30%, #d9772b 50%, #a8b86a 50%, #a8b86a 65%, #7ba05b 65%, #7ba05b 80%, #5b8a5b 80%, #5b8a5b 100%)',
+                    opacity: 0.55,
+                  }}
+                />
+                <div
+                  className="band-marker absolute top-1/2 h-5 w-[3px] -translate-y-1/2 bg-ink"
+                  style={{ left: `calc(${Math.min(100, Math.max(0, scoreInt / 10))}% - 1px)`, boxShadow: '0 0 10px rgba(255,255,255,0.5)' }}
+                />
+              </div>
+              <div className="mt-2 flex justify-between font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
+                <span>High</span>
+                <span>Elevated</span>
+                <span>Moderate</span>
+                <span>Low</span>
+                <span>Very low</span>
+              </div>
+              <div className="mt-6 border-t border-rule pt-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">Live score</span>
+                  <span className="tnum font-serif text-4xl text-ink">{shown}</span>
+                </div>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">Band</span>
+                  <span className="font-serif text-xl text-moss">{band}</span>
+                </div>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">Weight applied</span>
+                  <span className="tnum font-mono text-sm text-muted">
+                    {DIMS.filter(d => d.kind !== 'future').reduce((a, d) => a + d.w, 0).toFixed(2)} / 1.00
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* presets + readout */}
