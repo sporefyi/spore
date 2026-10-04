@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import VoxelMushroomFallback from '../shared/components/VoxelMushroomFallback'
 import { MechanismSection } from '../shared/components/MechanismDiagram'
@@ -11,7 +11,8 @@ import {
   LedgerTable,
 } from '../shared/components/primitives'
 import { provider } from '../shared/data/providers'
-import type { NetworkStats } from '../shared/types'
+import type { NetworkStats, Repayment } from '../shared/types'
+import type { Voxel } from '../shared/components/voxelModel'
 import SporeTokenBadge from '../shared/components/SporeTokenBadge'
 
 const VoxelMushroom = lazy(() => import('../shared/components/VoxelMushroom'))
@@ -72,6 +73,49 @@ function scrollToNetwork(): void {
   document.getElementById('network')?.scrollIntoView({ behavior: 'smooth' })
 }
 
+/** FNV-1a → seed: each repayment renders the same spore on every load. */
+function hashStr(s: string): number {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/**
+ * Every on-chain repayment becomes a spore voxel orbiting the mushroom —
+ * same ring/height band as the procedural field, size scaled by amount.
+ */
+function repaymentSpores(reps: Repayment[]): Voxel[] {
+  return reps.slice(0, 140).map((r) => {
+    const rng = mulberry32(hashStr(r.txHash))
+    const a = rng() * Math.PI * 2
+    const rr = 6 + rng() * 9
+    const y = 12 + rng() * 10
+    const usd = Math.max(0, Number(r.amount) / 1e6)
+    const size = 0.35 + Math.min(0.45, Math.log10(1 + usd) * 0.18)
+    const pick = rng()
+    const color = pick < 0.55 ? '#f0e6cc' : pick < 0.85 ? '#8fae5a' : '#d9772b'
+    return {
+      pos: [Math.cos(a) * rr, y, Math.sin(a) * rr] as [number, number, number],
+      color,
+      size,
+    }
+  })
+}
+
 const monoLabel: React.CSSProperties = {
   fontFamily: 'var(--font-mono)',
   fontSize: 11,
@@ -84,6 +128,7 @@ export default function Home() {
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' })
   }, [hash])
   const [stats, setStats] = useState<NetworkStats | null>(null)
+  const [repayments, setRepayments] = useState<Repayment[] | null>(null)
   useEffect(() => {
     let live = true
     provider
@@ -92,10 +137,20 @@ export default function Home() {
         if (live) setStats(st)
       })
       .catch(() => {})
+    provider
+      .getRepayments()
+      .then((reps) => {
+        if (live) setRepayments(reps)
+      })
+      .catch(() => {})
     return () => {
       live = false
     }
   }, [])
+  const heroSpores = useMemo(
+    () => (repayments === null ? undefined : repaymentSpores(repayments)),
+    [repayments]
+  )
   const fmtUsd = (v: number | null) =>
     v === null ? '—' : `$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
   return (
@@ -155,14 +210,23 @@ export default function Home() {
           <div>
             <div className="h-[52vh] w-full lg:h-[64vh]">
               <Suspense fallback={<VoxelMushroomFallback className="h-full w-full" />}>
-                <VoxelMushroom onReadOrganism={scrollToNetwork} className="w-full" />
+                <VoxelMushroom onReadOrganism={scrollToNetwork} className="w-full" spores={heroSpores} />
               </Suspense>
             </div>
             <div className="mt-6 flex items-start justify-between gap-6 border-t border-rule pt-4">
               <span className="whitespace-nowrap font-serif text-lg text-moss">— spores</span>
               <p className="text-right font-serif text-base italic leading-relaxed text-muted">
-                The mycelium is empty — for now. Every repayment becomes a spore,
-                and will be read from the chain. Drag to turn it.
+                {repayments !== null && repayments.length > 0 ? (
+                  <>
+                    {repayments.length} repayments on-chain — every repayment a spore, read from
+                    the chain. Drag to turn it.
+                  </>
+                ) : (
+                  <>
+                    The mycelium is empty — for now. Every repayment becomes a spore, and will be
+                    read from the chain. Drag to turn it.
+                  </>
+                )}
               </p>
             </div>
           </div>
