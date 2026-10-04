@@ -377,6 +377,13 @@ async function orbioImage(
     const out: string[] = [];
     for (const item of data.data ?? []) {
       if (typeof item.url === "string" && item.url.length > 0) out.push(item.url);
+      else if (typeof item.b64_json === "string" && item.b64_json.length > 0) {
+        out.push(`data:image/png;base64,${item.b64_json}`);
+      }
+    }
+    if (out.length === 0) {
+      logger.error({ body: JSON.stringify(data).slice(0, 300) }, "orbio playground image returned no usable images");
+      return { ok: false, code: "upstream_error", message: "model provider returned no images" };
     }
     return { ok: true, urls: out };
   }
