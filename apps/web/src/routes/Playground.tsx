@@ -1,16 +1,26 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { BrowserProvider, Contract, formatUnits, parseUnits } from 'ethers';
-import { useWallet, shortAddr } from '../shared/wallet/useWallet';
+import { useWallet } from '../shared/wallet/useWallet';
 import { indexerApiBase } from '../shared/data/providers';
 import {
-  Eyebrow,
-  Rule,
-  SectionNo,
-  Reveal,
   LoadingState,
+  Reveal,
+  SectionNo,
 } from '../shared/components/primitives';
-import { PRIMARY_CHAIN, explorerTxUrl, explorerAddressUrl } from '../shared/chains';
+import { PRIMARY_CHAIN, explorerTxUrl } from '../shared/chains';
+import Flywheel from './playground/Flywheel';
+import { Hero } from './playground/Hero';
+import { BurnSection } from './playground/BurnSection';
+import { ChatPanel } from './playground/ChatPanel';
+import { ImagePanel } from './playground/ImagePanel';
+import { AgentSection } from './playground/AgentSection';
+import { ApiNote } from './playground/ui';
+import type {
+  BurnRecord,
+  ChatMessage,
+  PlaygroundModel,
+} from './playground/types';
+import './playground/animations.css';
 
 /**
  * /playground — the 6th merchant. Burn $SPORE for credits, spend credits on
@@ -37,33 +47,7 @@ const SPORE_ABI = [
   'function decimals() view returns (uint8)',
 ];
 
-const SPORE_PER_CREDIT = 100; // 1 $SPORE = 100 credits
-const IMAGE_COST_CREDITS = 50;
-const USDG_PER_CREDIT_AGENT = 1000; // 1 USDG = 1000 credits (agent mode)
-
 const BURN_LOG_KEY = 'spore-playground-burns';
-
-/* ------------------------------------------------------------------ */
-/* Types                                                              */
-/* ------------------------------------------------------------------ */
-
-interface PlaygroundModel {
-  id: string;
-  type: string;
-  name: string;
-}
-
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-interface BurnRecord {
-  txHash: string;
-  amount: string;
-  time: string;
-  wallet: string;
-}
 
 /* ------------------------------------------------------------------ */
 /* Small utilities                                                    */
@@ -136,26 +120,6 @@ async function apiPost(url: string, body: unknown): Promise<ApiResult> {
   return { ok: res.ok, status: res.status, data };
 }
 
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
-    } catch {
-      return false;
-    }
-  }
-}
-
 function readBurnLog(): BurnRecord[] {
   try {
     const raw = localStorage.getItem(BURN_LOG_KEY);
@@ -175,115 +139,6 @@ function readBurnLog(): BurnRecord[] {
 }
 
 /* ------------------------------------------------------------------ */
-/* Shared bits                                                        */
-/* ------------------------------------------------------------------ */
-
-function CopyableAddress({ address, label }: { address: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <span className="inline-flex max-w-full items-center gap-2">
-      <code
-        title={address}
-        className="block truncate font-mono text-[13px] text-ink select-all"
-        aria-label={label}
-      >
-        {address}
-      </code>
-      <button
-        type="button"
-        onClick={() => {
-          void copyText(address).then((ok) => {
-            setCopied(ok);
-            if (ok) window.setTimeout(() => setCopied(false), 1500);
-          });
-        }}
-        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.18em] text-faint transition-colors hover:text-moss"
-        aria-label={`Copy ${label}`}
-      >
-        {copied ? 'Copied' : 'Copy'}
-      </button>
-    </span>
-  );
-}
-
-function ApiNote({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="border border-rule p-4 font-mono text-[12px] leading-relaxed text-muted">
-      {children}
-    </p>
-  );
-}
-
-function ErrorLine({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <p role="alert" className="mt-3 font-mono text-[12px] leading-relaxed text-ember">
-      {message}
-    </p>
-  );
-}
-
-function SuccessLine({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <p role="status" className="mt-3 font-mono text-[12px] leading-relaxed text-moss">
-      {message}
-    </p>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Flywheel strip                                                    */
-/* ------------------------------------------------------------------ */
-
-const FLYWHEEL_STEPS = [
-  { n: '01', title: 'Backers stake USDG', line: 'Capital enters the vault.' },
-  { n: '02', title: 'Agents borrow', line: 'Credit lines open on score.' },
-  { n: '03', title: 'Spend at playground', line: 'Calls settle in USDG and credits.' },
-  { n: '04', title: '$SPORE burns', line: 'Every burn shrinks supply.', accent: true },
-  { n: '05', title: 'Agents repay, scores rise', line: 'Clean credit feeds the next loan.' },
-];
-
-function FlywheelStrip() {
-  return (
-    <section aria-label="The flywheel" className="border-y border-rule">
-      <div className="mx-auto max-w-6xl px-6">
-        <ol className="grid md:grid-cols-5">
-          {FLYWHEEL_STEPS.map((s, i) => (
-            <li
-              key={s.n}
-              className={[
-                'relative px-5 py-6',
-                i > 0 ? 'border-t border-rule md:border-t-0 md:border-l' : '',
-              ].join(' ')}
-            >
-              <div className="font-mono text-[11px] tracking-[0.18em] text-faint">
-                {s.n}
-              </div>
-              <h3
-                className={[
-                  'mt-2 font-mono text-[12px] uppercase tracking-[0.14em]',
-                  s.accent ? 'text-moss' : 'text-ink',
-                ].join(' ')}
-              >
-                {s.title}
-              </h3>
-              <p className="mt-1 text-sm text-muted">{s.line}</p>
-              <span
-                aria-hidden="true"
-                className="absolute right-3 top-6 hidden font-mono text-[11px] text-faint md:inline"
-              >
-                {i < FLYWHEEL_STEPS.length - 1 ? '→' : ''}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* Playground page                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -295,11 +150,15 @@ export default function Playground() {
 
   /* Models */
   const [models, setModels] = useState<PlaygroundModel[]>([]);
-  const [modelsState, setModelsState] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+  const [modelsState, setModelsState] = useState<
+    'idle' | 'loading' | 'ready' | 'unavailable'
+  >('idle');
 
   /* Credits */
   const [credits, setCredits] = useState<number | null>(null);
-  const [creditsState, setCreditsState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [creditsState, setCreditsState] = useState<
+    'idle' | 'loading' | 'ready' | 'error'
+  >('idle');
 
   /* Burn */
   const [sporeBalance, setSporeBalance] = useState<string | null>(null);
@@ -447,7 +306,8 @@ export default function Playground() {
 
   const getSigner = useCallback(async () => {
     const eth = window.ethereum;
-    if (!eth) throw new Error('No wallet detected. Install a browser wallet to continue.');
+    if (!eth)
+      throw new Error('No wallet detected. Install a browser wallet to continue.');
     const provider = new BrowserProvider(eth);
     const net = await provider.getNetwork();
     if (Number(net.chainId) !== PRIMARY_CHAIN.chainId) {
@@ -490,7 +350,7 @@ export default function Playground() {
 
   /* ---------------- burn ---------------- */
 
-  async function handleBurn(e: React.FormEvent) {
+  async function handleBurn(e: FormEvent) {
     e.preventDefault();
     if (burning || !address) return;
     setBurnError(null);
@@ -539,8 +399,16 @@ export default function Playground() {
             'The transaction is recorded below — keep the hash and retry the grant.',
         );
       }
-      const granted = pickNumber(data, ['creditsGranted', 'credits_granted', 'credits']);
-      const newBal = pickNumber(data, ['credits', 'balance', 'creditsRemaining']);
+      const granted = pickNumber(data, [
+        'creditsGranted',
+        'credits_granted',
+        'credits',
+      ]);
+      const newBal = pickNumber(data, [
+        'credits',
+        'balance',
+        'creditsRemaining',
+      ]);
       setBurnOk(
         granted !== null
           ? `Burned ${amount} $SPORE → ${granted.toLocaleString()} credits granted.`
@@ -579,7 +447,7 @@ export default function Playground() {
 
   /* ---------------- chat ---------------- */
 
-  async function handleChatSend(e: React.FormEvent) {
+  async function handleChatSend(e: FormEvent) {
     e.preventDefault();
     const content = chatInput.trim();
     if (sending || !content || !address) return;
@@ -620,10 +488,16 @@ export default function Playground() {
       }
       const reply = pickString(data, ['reply', 'message', 'content', 'text']);
       if (!reply) {
-        throw new Error('The API returned a successful response with no message text.');
+        throw new Error(
+          'The API returned a successful response with no message text.',
+        );
       }
       setMessages([...next, { role: 'assistant', content: reply }]);
-      const deducted = pickNumber(data, ['creditsDeducted', 'credits_deducted', 'creditsUsed']);
+      const deducted = pickNumber(data, [
+        'creditsDeducted',
+        'credits_deducted',
+        'creditsUsed',
+      ]);
       const metaParts = [`model: ${chatModel}`];
       if (deducted !== null) metaParts.push(`−${deducted} credits`);
       setLastChatMeta(metaParts.join(' · '));
@@ -637,7 +511,7 @@ export default function Playground() {
 
   /* ---------------- image ---------------- */
 
-  async function handleImageGenerate(e: React.FormEvent) {
+  async function handleImageGenerate(e: FormEvent) {
     e.preventDefault();
     const text = prompt.trim();
     if (generating || !text || !address) return;
@@ -646,7 +520,9 @@ export default function Playground() {
       return;
     }
     if (!imageModel) {
-      setImageError('No image model is available yet — the model list has not loaded.');
+      setImageError(
+        'No image model is available yet — the model list has not loaded.',
+      );
       return;
     }
     setGenerating(true);
@@ -673,12 +549,20 @@ export default function Playground() {
       }
       const urls =
         pickStringArray(data, ['images', 'urls']) ??
-        (pickString(data, ['image', 'url']) ? [pickString(data, ['image', 'url']) as string] : null);
+        (pickString(data, ['image', 'url'])
+          ? [pickString(data, ['image', 'url']) as string]
+          : null);
       if (!urls || urls.length === 0) {
-        throw new Error('The API returned a successful response with no images.');
+        throw new Error(
+          'The API returned a successful response with no images.',
+        );
       }
       setImages((prev) => [...urls, ...prev].slice(0, 24));
-      const deducted = pickNumber(data, ['creditsDeducted', 'credits_deducted', 'creditsUsed']);
+      const deducted = pickNumber(data, [
+        'creditsDeducted',
+        'credits_deducted',
+        'creditsUsed',
+      ]);
       setImageOk(
         `Generated ${urls.length} image${urls.length === 1 ? '' : 's'}` +
           (deducted !== null ? ` · −${deducted} credits.` : '.'),
@@ -698,224 +582,63 @@ export default function Playground() {
 
   return (
     <div className="bg-bg text-ink">
-      {/* Breadcrumb (page-local; Chrome.tsx untouched) */}
-      <div className="mx-auto max-w-6xl px-6">
-        <nav aria-label="Breadcrumb" className="pt-6">
-          <Link
-            to="/"
-            className="font-mono text-[12px] uppercase tracking-widest text-faint transition-colors hover:text-moss"
-          >
-            <span aria-hidden="true">←</span> SPORE
-          </Link>
-        </nav>
-      </div>
+      <Hero
+        credits={credits}
+        creditsState={creditsState}
+        connected={connected}
+        status={status}
+        walletError={walletError}
+        onConnect={() => void connect()}
+        modelCount={models.length}
+        chatCount={chatModels.length}
+        imageCount={imageModels.length}
+      />
 
-      {/* Hero */}
-      <header className="mx-auto max-w-6xl px-6 pb-14 pt-10 md:pb-20 md:pt-16">
-        <Reveal>
-          <Eyebrow>The 6th merchant</Eyebrow>
-          <h1 className="display mt-4 text-6xl text-ink md:text-7xl">Playground</h1>
-          <p className="mt-3 max-w-xl font-serif text-xl italic text-muted md:text-2xl">
-            Burn $SPORE. Use frontier AI models. Every call feeds the flywheel.
-          </p>
-        </Reveal>
-      </header>
+      <Flywheel />
 
-      <Reveal>
-        <FlywheelStrip />
-      </Reveal>
-
-      {/* Credit balance bar */}
-      <section aria-label="Credit balance" className="mx-auto max-w-6xl px-6 pt-12">
-        <div className="border-y border-rule-strong py-6 md:py-8">
-          <div className="flex flex-wrap items-baseline justify-between gap-4">
-            <div>
-              <div className="eyebrow">Your credits</div>
-              <p className="mt-1 text-sm text-faint">
-                {creditsState === 'ready'
-                  ? 'Spendable on chat and image models below.'
-                  : creditsState === 'loading'
-                    ? 'Reading balance…'
-                    : 'Connect a wallet to read your balance.'}
-              </p>
-            </div>
-            <div
-              role="status"
-              aria-live="polite"
-              className="font-mono text-3xl text-ink tnum md:text-4xl"
-            >
-              {creditsState === 'ready' && credits !== null ? (
-                <>
-                  {credits.toLocaleString()}{' '}
-                  <span className="text-lg text-moss">credits</span>
-                </>
-              ) : creditsState === 'loading' ? (
-                <span className="text-faint">…</span>
-              ) : (
-                <span className="text-faint">—</span>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 01 — Human mode: get credits */}
-      <section aria-labelledby="pg-human" className="mx-auto max-w-6xl px-6 pt-14 md:pt-20">
-        <Reveal>
-          <SectionNo n="01" />
-          <h2 id="pg-human" className="display mt-3 text-3xl text-ink md:text-4xl">
-            Get credits
-          </h2>
-          <p className="mt-3 max-w-2xl leading-relaxed text-muted">
-            Humans enter the playground by burning $SPORE. Each burn grants
-            credits instantly — <span className="text-ink">1 $SPORE = {SPORE_PER_CREDIT} credits</span> —
-            and the tokens leave circulation for good.
-          </p>
-        </Reveal>
-
-        <div className="mt-8 grid gap-8 lg:grid-cols-2">
-          {/* Wallet panel */}
-          <Reveal className="border border-rule p-6">
-            <div className="eyebrow">Wallet</div>
-            {status === 'connected' && address ? (
-              <div className="mt-4">
-                <a
-                  href={explorerAddressUrl(address)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-mono text-sm text-ink underline decoration-rule-strong underline-offset-4 hover:decoration-ink"
-                >
-                  {shortAddr(address)}
-                </a>
-                <div className="mt-3 max-w-full overflow-hidden">
-                  <CopyableAddress address={address} label="Wallet address" />
-                </div>
-                <dl className="mt-5 space-y-2 text-sm">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <dt className="text-faint">$SPORE balance</dt>
-                    <dd className="font-mono text-ink tnum">
-                      {sporeBalance === null ? '…' : `${Number(sporeBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })} $SPORE`}
-                    </dd>
-                  </div>
-                  <div className="flex items-baseline justify-between gap-4">
-                    <dt className="text-faint">Burn destination</dt>
-                    <dd className="max-w-[60%] overflow-hidden text-right">
-                      <CopyableAddress address={DEAD_ADDRESS} label="Burn address" />
-                    </dd>
-                  </div>
-                </dl>
-                <button
-                  type="button"
-                  onClick={disconnect}
-                  className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-faint transition-colors hover:text-ink"
-                >
-                  Disconnect
-                </button>
-              </div>
-            ) : (
-              <div className="mt-4">
-                <button
-                  type="button"
-                  onClick={() => void connect()}
-                  disabled={status === 'connecting'}
-                  className="border border-fungal/60 px-6 py-3 font-mono text-[12px] uppercase tracking-[0.18em] text-fungal transition-colors hover:bg-fungal/10 disabled:opacity-50"
-                >
-                  {status === 'connecting'
-                    ? 'Waiting for wallet…'
-                    : status === 'wrong-chain'
-                      ? 'Switch to Robinhood Chain'
-                      : 'Connect wallet'}
-                </button>
-                {walletError && (
-                  <p role="alert" className="mt-2 font-mono text-[11px] text-ember">{walletError}</p>
-                )}
-                {status === 'wrong-chain' && !walletError && (
-                  <p className="mt-2 font-mono text-[11px] text-ember">
-                    Wrong network — approve the switch to Robinhood Chain (4663).
-                  </p>
-                )}
-              </div>
-            )}
-          </Reveal>
-
-          {/* Burn form */}
-          <Reveal className="border border-rule p-6" delay={80}>
-            <div className="eyebrow">Burn $SPORE</div>
-            <form onSubmit={(e) => void handleBurn(e)} className="mt-4">
-              <label
-                htmlFor="pg-burn-amount"
-                className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint"
-              >
-                Amount ($SPORE)
-              </label>
-              <div className="mt-2 flex gap-3">
-                <input
-                  id="pg-burn-amount"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0.0"
-                  value={burnAmount}
-                  onChange={(e) => setBurnAmount(e.target.value)}
-                  disabled={burning || !connected}
-                  className="w-full border border-rule-strong bg-transparent px-4 py-3 font-mono text-ink placeholder:text-faint focus:border-moss focus:outline-none disabled:opacity-50"
-                />
-                <button
-                  type="submit"
-                  disabled={burning || !connected}
-                  className="shrink-0 border border-moss/70 px-6 py-3 font-mono text-[12px] uppercase tracking-[0.18em] text-moss transition-colors hover:bg-moss/10 disabled:opacity-50"
-                >
-                  {burning ? (burnStep ?? 'Burning…') : 'Burn $SPORE'}
-                </button>
-              </div>
-              <p className="mt-3 text-sm text-muted">
-                Grants <span className="font-mono text-ink">{SPORE_PER_CREDIT} credits</span> per $SPORE.
-                {burnAmount && Number(burnAmount) > 0
-                  ? ` ${Number(burnAmount) * SPORE_PER_CREDIT} credits for ${burnAmount} $SPORE.`
-                  : ''}
-              </p>
-              {!connected && (
-                <p className="mt-3 font-mono text-[11px] text-faint">
-                  Connect a wallet first — the burn is a real on-chain transaction.
-                </p>
-              )}
-              {lastBurnTx && (
-                <p className="mt-3 font-mono text-[12px] text-faint">
-                  Last burn:{' '}
-                  <a
-                    href={explorerTxUrl(lastBurnTx)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-moss underline underline-offset-4 hover:text-ink select-all"
-                  >
-                    {lastBurnTx.slice(0, 10)}…{lastBurnTx.slice(-8)}
-                  </a>
-                </p>
-              )}
-              <ErrorLine message={burnError} />
-              <SuccessLine message={burnOk} />
-            </form>
-          </Reveal>
-        </div>
-      </section>
+      <BurnSection
+        connected={connected}
+        address={address}
+        status={status}
+        walletError={walletError}
+        onConnect={() => void connect()}
+        onDisconnect={disconnect}
+        sporeBalance={sporeBalance}
+        burnAmount={burnAmount}
+        setBurnAmount={setBurnAmount}
+        onBurn={(e) => void handleBurn(e)}
+        burning={burning}
+        burnStep={burnStep}
+        burnError={burnError}
+        burnOk={burnOk}
+        lastBurnTx={lastBurnTx}
+      />
 
       {/* 02 — Spend: chat / image */}
-      <section aria-labelledby="pg-spend" className="mx-auto max-w-6xl px-6 pt-14 md:pt-20">
+      <section
+        aria-labelledby="pg-spend"
+        className="mx-auto max-w-6xl px-6 pt-14 md:pt-20"
+      >
         <Reveal>
           <SectionNo n="02" />
-          <h2 id="pg-spend" className="display mt-3 text-3xl text-ink md:text-4xl">
+          <h2
+            id="pg-spend"
+            className="display mt-3 text-3xl text-ink md:text-4xl"
+          >
             Spend credits
           </h2>
           <p className="mt-3 max-w-2xl leading-relaxed text-muted">
             Every request is signed with your wallet — the API verifies the
-            signature, spends your credits, and routes the call to a frontier model.
+            signature, spends your credits, and routes the call to a frontier
+            model.
           </p>
         </Reveal>
 
         {!connected && (
           <div className="mt-8">
             <ApiNote>
-              Connect a wallet above to use the playground. Models and credits are
-              read per-wallet.
+              Connect a wallet above to use the playground. Models and credits
+              are read per-wallet.
             </ApiNote>
           </div>
         )}
@@ -929,8 +652,7 @@ export default function Playground() {
           <div className="mt-8">
             <ApiNote>
               The model catalog is unavailable — the playground API is not
-              responding. No models are shown because none are known. Check back
-              after the API lane lands.
+              responding. No models are shown because none are known.
             </ApiNote>
           </div>
         )}
@@ -938,7 +660,11 @@ export default function Playground() {
         {modelsState === 'ready' && (
           <div className="mt-8">
             {/* Tabs */}
-            <div role="tablist" aria-label="Playground modes" className="flex border-b border-rule">
+            <div
+              role="tablist"
+              aria-label="Playground modes"
+              className="flex border-b border-rule"
+            >
               {(['chat', 'image'] as const).map((t) => (
                 <button
                   key={t}
@@ -966,208 +692,66 @@ export default function Playground() {
               ))}
             </div>
 
-            {/* Chat panel */}
-            <div
-              role="tabpanel"
-              id="pg-panel-chat"
-              aria-labelledby="pg-tab-chat"
-              hidden={tab !== 'chat'}
-              className="py-8"
-            >
-              <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-                <div>
-                  <label
-                    htmlFor="pg-chat-model"
-                    className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint"
-                  >
-                    Model
-                  </label>
-                  {chatModels.length === 0 ? (
-                    <p className="mt-2 text-sm text-muted">
-                      No chat models returned by the API yet — models loading,
-                      the index is being probed.
-                    </p>
-                  ) : (
-                    <select
-                      id="pg-chat-model"
-                      value={chatModel}
-                      onChange={(e) => setChatModel(e.target.value)}
-                      className="mt-2 w-full border border-rule-strong bg-bg px-3 py-2.5 font-mono text-sm text-ink focus:border-moss focus:outline-none"
-                    >
-                      {chatModels.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <p className="mt-3 text-sm text-faint">
-                    Signed with your wallet on every send. Replies stream in as a
-                    single response.
-                  </p>
-                </div>
-
-                <div className="border border-rule">
-                  <div className="max-h-[420px] overflow-y-auto p-5" aria-live="polite" aria-label="Chat messages">
-                    {messages.length === 0 ? (
-                      <p className="font-mono text-[12px] text-faint">
-                        No messages yet. Ask something — the flywheel is listening.
-                      </p>
-                    ) : (
-                      <ol className="space-y-4">
-                        {messages.map((m, i) => (
-                          <li
-                            key={i}
-                            className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}
-                          >
-                            <div
-                              className={[
-                                'max-w-[80%] px-4 py-3 text-sm leading-relaxed',
-                                m.role === 'user'
-                                  ? 'border border-moss/50 bg-moss/10 text-ink'
-                                  : 'border border-rule bg-transparent text-muted',
-                              ].join(' ')}
-                            >
-                              <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                                {m.role === 'user' ? 'You' : 'Model'}
-                              </div>
-                              <p className="whitespace-pre-wrap">{m.content}</p>
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
-                    )}
-                    {sending && (
-                      <p className="mt-4 font-mono text-[12px] text-faint motion-safe:animate-pulse">
-                        Signing and sending…
-                      </p>
-                    )}
-                  </div>
-                  <form onSubmit={(e) => void handleChatSend(e)} className="border-t border-rule p-4">
-                    <div className="flex gap-3">
-                      <label htmlFor="pg-chat-input" className="sr-only">
-                        Message
-                      </label>
-                      <input
-                        id="pg-chat-input"
-                        type="text"
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        disabled={sending || !connected || chatModels.length === 0}
-                        placeholder="Type a message…"
-                        className="w-full border border-rule-strong bg-transparent px-4 py-3 text-sm text-ink placeholder:text-faint focus:border-moss focus:outline-none disabled:opacity-50"
-                      />
-                      <button
-                        type="submit"
-                        disabled={sending || !connected || chatModels.length === 0 || !chatInput.trim()}
-                        className="shrink-0 border border-moss/70 px-5 py-3 font-mono text-[12px] uppercase tracking-[0.18em] text-moss transition-colors hover:bg-moss/10 disabled:opacity-50"
-                      >
-                        Send
-                      </button>
-                    </div>
-                    {lastChatMeta && (
-                      <p className="mt-2 font-mono text-[11px] text-faint">{lastChatMeta}</p>
-                    )}
-                    <ErrorLine message={chatError} />
-                  </form>
-                </div>
+            {tab === 'chat' ? (
+              <div
+                key="chat"
+                role="tabpanel"
+                id="pg-panel-chat"
+                aria-labelledby="pg-tab-chat"
+                className="pg-tab-in py-8"
+              >
+                <ChatPanel
+                  models={chatModels}
+                  model={chatModel}
+                  setModel={setChatModel}
+                  messages={messages}
+                  sending={sending}
+                  input={chatInput}
+                  setInput={setChatInput}
+                  onSend={(e) => void handleChatSend(e)}
+                  error={chatError}
+                  meta={lastChatMeta}
+                  connected={connected}
+                />
               </div>
-            </div>
-
-            {/* Image panel */}
-            <div
-              role="tabpanel"
-              id="pg-panel-image"
-              aria-labelledby="pg-tab-image"
-              hidden={tab !== 'image'}
-              className="py-8"
-            >
-              <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-                <div>
-                  <label
-                    htmlFor="pg-image-model"
-                    className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint"
-                  >
-                    Model
-                  </label>
-                  {imageModels.length === 0 ? (
-                    <p className="mt-2 text-sm text-muted">
-                      No image models returned by the API yet — models loading,
-                      the index is being probed.
-                    </p>
-                  ) : (
-                    <select
-                      id="pg-image-model"
-                      value={imageModel}
-                      onChange={(e) => setImageModel(e.target.value)}
-                      className="mt-2 w-full border border-rule-strong bg-bg px-3 py-2.5 font-mono text-sm text-ink focus:border-moss focus:outline-none"
-                    >
-                      {imageModels.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <p className="mt-3 text-sm text-faint">
-                    <span className="font-mono text-ink">{IMAGE_COST_CREDITS} credits</span> per image.
-                  </p>
-                </div>
-
-                <div>
-                  <form onSubmit={(e) => void handleImageGenerate(e)} className="flex gap-3">
-                    <label htmlFor="pg-image-prompt" className="sr-only">
-                      Image prompt
-                    </label>
-                    <input
-                      id="pg-image-prompt"
-                      type="text"
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      disabled={generating || !connected || imageModels.length === 0}
-                      placeholder="A mushroom city at dusk, mycelium streets…"
-                      className="w-full border border-rule-strong bg-transparent px-4 py-3 text-sm text-ink placeholder:text-faint focus:border-moss focus:outline-none disabled:opacity-50"
-                    />
-                    <button
-                      type="submit"
-                      disabled={generating || !connected || imageModels.length === 0 || !prompt.trim()}
-                      className="shrink-0 border border-moss/70 px-5 py-3 font-mono text-[12px] uppercase tracking-[0.18em] text-moss transition-colors hover:bg-moss/10 disabled:opacity-50"
-                    >
-                      {generating ? 'Generating…' : 'Generate'}
-                    </button>
-                  </form>
-                  <ErrorLine message={imageError} />
-                  <SuccessLine message={imageOk} />
-                  {images.length > 0 ? (
-                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      {images.map((src, i) => (
-                        <figure key={i} className="border border-rule p-2">
-                          <img
-                            src={src}
-                            alt={`Generated image ${i + 1}`}
-                            className="aspect-square w-full object-cover"
-                            loading="lazy"
-                          />
-                        </figure>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="mt-6 font-mono text-[12px] text-faint">
-                      Nothing generated yet this session.
-                    </p>
-                  )}
-                </div>
+            ) : (
+              <div
+                key="image"
+                role="tabpanel"
+                id="pg-panel-image"
+                aria-labelledby="pg-tab-image"
+                className="pg-tab-in py-8"
+              >
+                <ImagePanel
+                  models={imageModels}
+                  model={imageModel}
+                  setModel={setImageModel}
+                  prompt={prompt}
+                  setPrompt={setPrompt}
+                  onGenerate={(e) => void handleImageGenerate(e)}
+                  generating={generating}
+                  error={imageError}
+                  ok={imageOk}
+                  images={images}
+                  connected={connected}
+                />
               </div>
-            </div>
+            )}
           </div>
         )}
       </section>
 
       {/* 03 — Burn history (local) */}
-      <section aria-labelledby="pg-history" className="mx-auto max-w-6xl px-6 pt-14 md:pt-20">
+      <section
+        aria-labelledby="pg-history"
+        className="mx-auto max-w-6xl px-6 pt-14 md:pt-20"
+      >
         <Reveal>
           <SectionNo n="03" />
-          <h2 id="pg-history" className="display mt-3 text-3xl text-ink md:text-4xl">
+          <h2
+            id="pg-history"
+            className="display mt-3 text-3xl text-ink md:text-4xl"
+          >
             Burn history
           </h2>
           <p className="mt-3 max-w-2xl leading-relaxed text-muted">
@@ -1175,90 +759,70 @@ export default function Playground() {
             browser's local storage — a local ledger, not an on-chain index.
           </p>
         </Reveal>
-        <div className="mt-8">
-          {burnLog.length === 0 ? (
-            <p className="border border-rule p-5 font-mono text-[12px] text-faint">
-              No burns recorded in this browser yet.
-            </p>
-          ) : (
-            <div className="overflow-x-auto border border-rule">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
-                    <th scope="col" className="border-b border-rule-strong px-4 py-3 text-left font-normal">Transaction</th>
-                    <th scope="col" className="border-b border-rule-strong px-4 py-3 text-right font-normal">Amount</th>
-                    <th scope="col" className="border-b border-rule-strong px-4 py-3 text-right font-normal">Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {burnLog.map((r) => (
-                    <tr key={r.txHash} className="border-b border-rule last:border-b-0">
-                      <td className="px-4 py-3">
-                        <a
-                          href={explorerTxUrl(r.txHash)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-mono text-[13px] text-moss underline underline-offset-4 hover:text-ink select-all"
-                        >
-                          {r.txHash.slice(0, 10)}…{r.txHash.slice(-8)}
-                        </a>
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono text-ink tnum">
-                        {r.amount} $SPORE
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono text-[12px] text-faint">
-                        {new Date(r.time).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* 04 — Agent mode */}
-      <section aria-labelledby="pg-agents" className="mx-auto max-w-6xl px-6 py-14 md:py-20">
-        <Reveal>
-          <SectionNo n="04" />
-          <h2 id="pg-agents" className="display mt-3 text-3xl text-ink md:text-4xl">
-            For agents
-          </h2>
-          <p className="mt-3 max-w-2xl leading-relaxed text-muted">
-            Agents spend USDG with the market merchant, then claim credits against
-            the payment transaction. <span className="text-ink">1 USDG = {USDG_PER_CREDIT_AGENT.toLocaleString()} credits.</span>{' '}
-            No keys, no accounts — a signed payment and a POST.
-          </p>
-        </Reveal>
         <Reveal delay={80}>
-          <div className="mt-8 border border-rule">
-            <div className="flex items-center justify-between border-b border-rule px-5 py-3">
-              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
-                Merchant spend flow
-              </span>
-              <CopyableAddress address={PLAYGROUND_MERCHANT} label="Merchant address" />
-            </div>
-            <pre className="overflow-x-auto p-5 font-mono text-[13px] leading-relaxed text-muted">
-{`# 1. Pay USDG (6 decimals) to the market merchant
-transfer(usdg, ${PLAYGROUND_MERCHANT}, amount_usdg)
-
-# 2. Claim playground credits against the payment
-POST ${apiBase ?? '<indexer>'}/playground/merchant/spend
-{
-  "paymentTx": "0x..."
-}
-
-# → { "credits": <amount_usdg × ${USDG_PER_CREDIT_AGENT}> }`}
-            </pre>
+          <div className="mt-8">
+            {burnLog.length === 0 ? (
+              <p className="border border-rule p-5 font-mono text-[12px] text-faint">
+                No burns recorded in this browser yet.
+              </p>
+            ) : (
+              <div className="overflow-x-auto border border-rule transition-colors hover:border-rule-strong">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
+                      <th
+                        scope="col"
+                        className="border-b border-rule-strong px-4 py-3 text-left font-normal"
+                      >
+                        Transaction
+                      </th>
+                      <th
+                        scope="col"
+                        className="border-b border-rule-strong px-4 py-3 text-right font-normal"
+                      >
+                        Amount
+                      </th>
+                      <th
+                        scope="col"
+                        className="border-b border-rule-strong px-4 py-3 text-right font-normal"
+                      >
+                        Time
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {burnLog.map((r) => (
+                      <tr
+                        key={r.txHash}
+                        className="border-b border-rule transition-colors last:border-b-0 hover:bg-ink/[0.03]"
+                      >
+                        <td className="px-4 py-3">
+                          <a
+                            href={explorerTxUrl(r.txHash)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-mono text-[13px] text-moss underline underline-offset-4 transition-colors hover:text-ink select-all"
+                          >
+                            {r.txHash.slice(0, 10)}…{r.txHash.slice(-8)}
+                          </a>
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-ink tnum">
+                          {r.amount} $SPORE
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-[12px] text-faint">
+                          {new Date(r.time).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-          <p className="mt-4 font-mono text-[12px] text-faint">
-            Credits from merchant spends and $SPORE burns are fungible — one
-            balance, one playground.
-          </p>
         </Reveal>
-        <Rule strong className="mt-16" />
       </section>
+
+      <AgentSection apiBase={apiBase} merchant={PLAYGROUND_MERCHANT} />
     </div>
   );
 }
