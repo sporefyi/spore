@@ -643,19 +643,19 @@ export function registerPlayground(v1: FastifyInstance, deps: AppDeps): void {
   // --- GET /api/v1/playground/stats -------------------------------------------
   v1.get("/playground/stats", async (_req, reply) => {
     const [burns, usage, wallets] = await Promise.all([
-      pg.query(
+      db.query(
         `SELECT COALESCE(SUM(spore_amount::numeric), 0) AS total_spore,
                 COALESCE(SUM(credits_granted), 0) AS total_credits_granted,
                 COUNT(*) AS burn_count
          FROM playground_burns`
       ),
-      pg.query(
+      db.query(
         `SELECT COALESCE(SUM(credits_spent), 0) AS total_spent,
                 COUNT(*) AS call_count,
                 COUNT(DISTINCT wallet) AS active_wallets
          FROM playground_usage`
       ),
-      pg.query(
+      db.query(
         `SELECT COUNT(DISTINCT wallet) AS funded_wallets,
                 COALESCE(SUM(balance), 0) AS credits_outstanding
          FROM playground_credits`
