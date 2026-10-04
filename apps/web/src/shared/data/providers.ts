@@ -20,6 +20,7 @@ import type {
   AgentCreditProfile,
   AgentSummary,
   NetworkStats,
+  Repayment,
   RiskBand,
   ScorePoint,
 } from '../types';
@@ -33,6 +34,8 @@ export interface DataProvider {
   listAgents(): Promise<AgentSummary[]>;
   getAgent(agentId: string): Promise<AgentCreditProfile | null>;
   getScoreHistory(agentId: string): Promise<ScorePoint[]>;
+  /** On-chain repayments, oldest-first. [] when unavailable. */
+  getRepayments(): Promise<Repayment[]>;
 }
 
 const UNAVAILABLE_STATS: NetworkStats = {
@@ -70,6 +73,10 @@ export class MainnetProvider implements DataProvider {
 
   getScoreHistory(agentId: string): Promise<ScorePoint[]> {
     void agentId;
+    return Promise.resolve([]);
+  }
+
+  getRepayments(): Promise<Repayment[]> {
     return Promise.resolve([]);
   }
 }
@@ -201,6 +208,39 @@ export class IndexerProvider implements DataProvider {
     } catch {
       return { ...UNAVAILABLE_STATS };
     }
+  }
+
+  async getRepayments(): Promise<Repayment[]> {
+    // Retry with backoff: the indexer can cold-start. Oldest-first so
+    // visualizations grow chronologically.
+    const waits = [0, 2500, 6000];
+    for (const wait of waits) {
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      try {
+        const proto = await this.protocolState();
+        if (!proto.active) return [];
+        const body = await this.fetchJson<unknown>('/ledger?type=repay&limit=250');
+        if (!isRec(body) || !Array.isArray(body.items)) continue;
+        const out: Repayment[] = [];
+        for (const item of body.items as unknown[]) {
+          if (!isRec(item) || typeof item.txHash !== 'string') continue;
+          out.push({
+            agentId: String(item.agentId ?? ''),
+            amount: String(item.amount ?? '0'),
+            txHash: item.txHash,
+            blockNumber: Number(item.blockNumber ?? 0),
+            t: String(item.t ?? ''),
+          });
+        }
+        if (out.length > 0) {
+          out.reverse(); // API is newest-first
+          return out;
+        }
+      } catch {
+        /* retry */
+      }
+    }
+    return [];
   }
 
   async listAgents(): Promise<AgentSummary[]> {
@@ -410,6 +450,10 @@ export class DemoProvider implements DataProvider {
       });
     }
     return Promise.resolve(pts);
+  }
+
+  getRepayments(): Promise<Repayment[]> {
+    return Promise.resolve([]);
   }
 }
 
