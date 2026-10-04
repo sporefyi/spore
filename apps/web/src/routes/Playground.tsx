@@ -486,7 +486,7 @@ export default function Playground() {
             `Chat request failed (HTTP ${status}).`,
         );
       }
-      const reply = pickString(data, ['reply', 'message', 'content', 'text']);
+      const reply = pickString(data, ['response', 'reply', 'message', 'content', 'text']);
       if (!reply) {
         throw new Error(
           'The API returned a successful response with no message text.',
