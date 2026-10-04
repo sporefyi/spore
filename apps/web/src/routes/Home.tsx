@@ -135,6 +135,12 @@ export default function Home() {
                 >
                   Explore the network →
                 </Link>
+                <Link
+                  to="/live"
+                  className="text-ink underline underline-offset-4 decoration-rule-strong hover:decoration-ink"
+                >
+                  Watch the market come alive →
+                </Link>
               </div>
               <Link
                 to="/protocol"
