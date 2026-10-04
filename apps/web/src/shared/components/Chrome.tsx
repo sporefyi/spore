@@ -7,6 +7,7 @@ const NAV_LINKS: ReadonlyArray<{ label: string; to: string; end?: boolean }> = [
   { label: "Network", to: "/#ledger" },
   { label: "Protocol", to: "/protocol" },
   { label: "Contracts", to: "/contracts" },
+  { label: "Playground", to: "/playground" },
 ];
 
 const FOOTER_COLUMNS: ReadonlyArray<{
