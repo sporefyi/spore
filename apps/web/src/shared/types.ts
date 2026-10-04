@@ -87,3 +87,14 @@ export interface ScorePoint {
   score: number;
 }
 
+/** One on-chain repayment (CreditManager Repay event, via the indexer ledger). */
+export interface Repayment {
+  agentId: string;
+  /** Base units (6dp). */
+  amount: string;
+  txHash: string;
+  blockNumber: number;
+  /** ISO timestamp. */
+  t: string;
+}
+
