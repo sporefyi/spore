@@ -46,6 +46,11 @@
    "name": "claude-fable-5"
   },
   {
+   "id": "anthropic/claude-haiku-4.5",
+   "type": "chat",
+   "name": "claude-haiku-4.5"
+  },
+  {
    "id": "anthropic/claude-opus-4.5",
    "type": "chat",
    "name": "claude-opus-4.5"
@@ -191,6 +196,11 @@
    "name": "deepseek-v4-flash-0731"
   },
   {
+   "id": "deepseek/deepseek-v4-flash-vision-exp",
+   "type": "chat",
+   "name": "deepseek-v4-flash-vision-exp"
+  },
+  {
    "id": "google/gemini-2.5-flash",
    "type": "chat",
    "name": "gemini-2.5-flash"
@@ -286,9 +296,19 @@
    "name": "gemma-4-31b-it"
   },
   {
+   "id": "ibm-granite/granite-4.0-h-micro",
+   "type": "chat",
+   "name": "granite-4.0-h-micro"
+  },
+  {
    "id": "inception/mercury-2",
    "type": "chat",
    "name": "mercury-2"
+  },
+  {
+   "id": "inception/mercury-2.5",
+   "type": "chat",
+   "name": "mercury-2.5"
   },
   {
    "id": "inference-net/schematron-v2-turbo",
@@ -334,6 +354,11 @@
    "id": "meta-llama/llama-guard-4-12b",
    "type": "chat",
    "name": "llama-guard-4-12b"
+  },
+  {
+   "id": "microsoft/mai-image-2.6-flash",
+   "type": "image",
+   "name": "mai-image-2.6-flash"
   },
   {
    "id": "microsoft/phi-4",
@@ -411,6 +436,11 @@
    "name": "mistral-large-2512"
   },
   {
+   "id": "mistralai/mistral-large-2512:batch",
+   "type": "chat",
+   "name": "mistral-large-2512:batch"
+  },
+  {
    "id": "mistralai/mistral-medium-3",
    "type": "chat",
    "name": "mistral-medium-3"
@@ -484,6 +514,16 @@
    "id": "morph/morph-v3-large",
    "type": "chat",
    "name": "morph-v3-large"
+  },
+  {
+   "id": "nex-agi/nex-n2.5-mini",
+   "type": "chat",
+   "name": "nex-n2.5-mini"
+  },
+  {
+   "id": "nex-agi/nex-n2.5-pro",
+   "type": "chat",
+   "name": "nex-n2.5-pro"
   },
   {
    "id": "nousresearch/hermes-3-llama-3.1-405b",
@@ -631,6 +671,11 @@
    "name": "gpt-5.6-terra-pro"
   },
   {
+   "id": "openai/gpt-6-astra",
+   "type": "chat",
+   "name": "gpt-6-astra"
+  },
+  {
    "id": "openai/gpt-chat-latest",
    "type": "chat",
    "name": "gpt-chat-latest"
@@ -639,6 +684,11 @@
    "id": "openai/gpt-image-2",
    "type": "image",
    "name": "gpt-image-2"
+  },
+  {
+   "id": "openai/gpt-image-2.5-flare",
+   "type": "image",
+   "name": "gpt-image-2.5-flare"
   },
   {
    "id": "openai/o1",
@@ -816,6 +866,11 @@
    "name": "qwen3-vl-32b-instruct"
   },
   {
+   "id": "qwen/qwen3-vl-8b-instruct",
+   "type": "chat",
+   "name": "qwen3-vl-8b-instruct"
+  },
+  {
    "id": "qwen/qwen3-vl-8b-thinking",
    "type": "chat",
    "name": "qwen3-vl-8b-thinking"
@@ -876,6 +931,11 @@
    "name": "qwen3.7-plus"
   },
   {
+   "id": "qwen/qwen3.8-max-0902",
+   "type": "chat",
+   "name": "qwen3.8-max-0902"
+  },
+  {
    "id": "rekaai/reka-edge",
    "type": "chat",
    "name": "reka-edge"
@@ -916,6 +976,16 @@
    "name": "hunyuan-a13b-instruct"
   },
   {
+   "id": "tencent/hy-mt2-1.8b",
+   "type": "chat",
+   "name": "hy-mt2-1.8b"
+  },
+  {
+   "id": "tencent/hy-mt2-30b-a3b",
+   "type": "chat",
+   "name": "hy-mt2-30b-a3b"
+  },
+  {
    "id": "tencent/hy3",
    "type": "chat",
    "name": "hy3"
@@ -939,6 +1009,11 @@
    "id": "unbiased/pareto",
    "type": "chat",
    "name": "pareto"
+  },
+  {
+   "id": "unbiased/pareto-26.10-preview",
+   "type": "chat",
+   "name": "pareto-26.10-preview"
   },
   {
    "id": "upstage/solar-pro-3",
@@ -1031,6 +1106,11 @@
    "name": "glm-5.2"
   },
   {
+   "id": "z-ai/glm-5.3-flash",
+   "type": "chat",
+   "name": "glm-5.3-flash"
+  },
+  {
    "id": "z-ai/glm-5v-turbo",
    "type": "chat",
    "name": "glm-5v-turbo"
@@ -1083,5 +1163,5 @@
  ],
  "probed_at": "2026-10-04",
  "total_tested": 625,
- "working": 216
+ "working": 232
 }
