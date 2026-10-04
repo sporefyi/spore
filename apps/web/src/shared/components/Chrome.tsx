@@ -4,8 +4,10 @@ import { PRIMARY_CHAIN } from "../chains";
 const NAV_LINKS: ReadonlyArray<{ label: string; to: string; end?: boolean }> = [
   { label: "Agents", to: "/agents" },
   { label: "Credit", to: "/market" },
+  { label: "Markets", to: "/market" },
   { label: "Network", to: "/#ledger" },
   { label: "Protocol", to: "/protocol" },
+  { label: "Contracts", to: "/contracts" },
 ];
 
 const FOOTER_COLUMNS: ReadonlyArray<{
