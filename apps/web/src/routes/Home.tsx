@@ -458,7 +458,13 @@ export default function Home() {
           <h2 className="display mt-6 text-4xl md:text-6xl">The credit ledger, as it happens.</h2>
         </Reveal>
         <div className="mt-16">
-          <LedgerTable<LedgerRow>
+          {repayments === null ? (
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
+              Reading the ledger…
+            </p>
+          ) : (
+            <>
+              <LedgerTable<LedgerRow>
             columns={[
               {
                 key: 'block',
@@ -490,6 +496,9 @@ export default function Home() {
               Showing the latest {ledgerRows.length} of {repayments.length} on-chain repayments — newest first.
             </p>
           )}
+            </>
+          )}
+        </div>
         </div>
       </section>
 
