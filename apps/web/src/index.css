@@ -177,7 +177,8 @@ a {
   .merchant-row,
   .sigma-breathe,
   .term-shimmer,
-  .weight-bar {
+  .weight-bar,
+  .live-dot {
     animation: none;
   }
 }
@@ -300,4 +301,19 @@ a {
 }
 .merchant-row {
   animation: merchant-row-in 0.6s ease both;
+}
+
+/* /live cinematic loader: a single pulsing moss dot */
+@keyframes live-dot-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+.live-dot {
+  animation: live-dot-pulse 1.6s ease-in-out infinite;
 }
