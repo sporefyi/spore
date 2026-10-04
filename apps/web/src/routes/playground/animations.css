@@ -1,0 +1,159 @@
+/*
+ * Playground micro-interactions.
+ * Restrained by design: moss/fungal/ivory on warm black, no bounce, no neon.
+ * Everything here is disabled under prefers-reduced-motion.
+ */
+
+/* Message + image entrance */
+@keyframes pg-msg-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pg-img-in {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes pg-tab-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Streaming caret */
+@keyframes pg-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Typing dots */
+@keyframes pg-dot-pulse {
+  0%, 60%, 100% { opacity: 0.25; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1); }
+}
+
+/* Image generation shimmer */
+@keyframes pg-shimmer-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+/* Floating dream dots */
+@keyframes pg-float-dot {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(-10px); opacity: 1; }
+}
+
+/* Scroll cue */
+@keyframes pg-scroll-cue {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+/* Empty-state breathing spore */
+@keyframes pg-spore-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 12px rgba(143, 174, 90, 0.4); }
+  50% { transform: scale(1.35); opacity: 1; box-shadow: 0 0 26px rgba(143, 174, 90, 0.7); }
+}
+
+.pg-msg-enter { animation: pg-msg-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.pg-img-enter { animation: pg-img-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.pg-tab-in { animation: pg-tab-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+.pg-caret {
+  display: inline-block;
+  width: 8px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--moss);
+  animation: pg-caret-blink 0.9s steps(2) infinite;
+}
+
+/* Typing indicator: three moss dots */
+.pg-typing-dots { display: inline-flex; gap: 5px; align-items: center; }
+.pg-typing-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--moss);
+  animation: pg-dot-pulse 1.2s ease-in-out infinite;
+}
+.pg-typing-dots i:nth-child(2) { animation-delay: 0.15s; }
+.pg-typing-dots i:nth-child(3) { animation-delay: 0.3s; }
+
+/* Magnetic buttons: smooth pull toward cursor */
+.pg-magnetic {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease,
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease;
+  will-change: transform;
+}
+
+/* Ember glow for the burn button */
+.pg-ember:hover:not(:disabled) {
+  border-color: var(--fungal);
+  box-shadow:
+    0 0 32px rgba(217, 119, 43, 0.35),
+    inset 0 0 14px rgba(217, 119, 43, 0.1);
+}
+.pg-ember:active:not(:disabled) {
+  box-shadow:
+    0 0 48px rgba(217, 119, 43, 0.5),
+    inset 0 0 18px rgba(217, 119, 43, 0.18);
+}
+
+/* Image generation shimmer */
+.pg-shimmer {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(143, 174, 90, 0.09) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: pg-shimmer-sweep 1.6s linear infinite;
+}
+.pg-float-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--moss);
+  animation: pg-float-dot 1.8s ease-in-out infinite;
+}
+
+/* Scroll cue */
+.pg-scroll-cue { animation: pg-scroll-cue 2.4s ease-in-out infinite; }
+
+/* Empty-state breathing spore */
+.pg-empty-spore {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--moss);
+  animation: pg-spore-breathe 2.6s ease-in-out infinite;
+}
+
+/* Model picker dropdown entrance */
+@keyframes pg-menu-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.pg-menu-in { animation: pg-menu-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-msg-enter,
+  .pg-img-enter,
+  .pg-tab-in,
+  .pg-menu-in,
+  .pg-caret,
+  .pg-typing-dots i,
+  .pg-shimmer,
+  .pg-float-dot,
+  .pg-scroll-cue,
+  .pg-empty-spore {
+    animation: none;
+  }
+  .pg-magnetic { transition: none; }
+}
