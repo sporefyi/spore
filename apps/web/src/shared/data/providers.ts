@@ -91,6 +91,19 @@ export class MainnetProvider implements DataProvider {
 
 const INDEXER_API_PREFIX = '/api/v1';
 const INDEXER_TIMEOUT_MS = 10_000;
+
+/**
+ * API base for the indexer (VITE_INDEXER_URL + /api/v1), shared by the
+ * market store. Null when the indexer is not configured.
+ */
+export function indexerApiBase(): string | null {
+  const env = (import.meta as unknown as { env: Record<string, string | undefined> }).env;
+  const u = env.VITE_INDEXER_URL;
+  if (typeof u === 'string' && u.trim() !== '') {
+    return u.trim().replace(/\/+$/, '') + INDEXER_API_PREFIX;
+  }
+  return null;
+}
 const PROTOCOL_CACHE_MS = 60_000;
 const DEFAULT_DECIMALS = 18;
 const VALID_BANDS: readonly RiskBand[] = ['VERY LOW', 'LOW', 'MODERATE', 'ELEVATED', 'HIGH'];
