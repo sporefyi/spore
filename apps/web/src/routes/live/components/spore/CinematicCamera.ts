@@ -44,6 +44,9 @@ export class CinematicCamera {
   private readonly keys: Keyframe[] = [];
   private readonly tmpPos = new THREE.Vector3();
   private readonly tmpLook = new THREE.Vector3();
+  private readonly sph = new THREE.Spherical();
+  private userYaw = 0;
+  private userPitch = 0;
 
   constructor(private readonly camera: THREE.PerspectiveCamera) {
     for (let t = 0; t <= 120; t += 1) {
@@ -59,8 +62,22 @@ export class CinematicCamera {
     // Subtle cursor parallax: offset the look target by pointer * 1.5 units max.
     this.tmpLook.x += pointer.x * 1.5;
     this.tmpLook.y += pointer.y * 1.5;
+    // User drag orbit: rotate the scripted pose around the look target.
+    if (this.userYaw !== 0 || this.userPitch !== 0) {
+      this.tmpPos.sub(this.tmpLook);
+      this.sph.setFromVector3(this.tmpPos);
+      this.sph.theta += this.userYaw;
+      this.sph.phi = THREE.MathUtils.clamp(this.sph.phi + this.userPitch, 0.12, Math.PI - 0.12);
+      this.tmpPos.setFromSpherical(this.sph).add(this.tmpLook);
+    }
     this.camera.position.copy(this.tmpPos);
     this.camera.lookAt(this.tmpLook);
+  }
+
+  /** Additive drag orbit (radians). Persists until replay/skip reset it. */
+  setUserOrbit(yaw: number, pitch: number): void {
+    this.userYaw = yaw;
+    this.userPitch = THREE.MathUtils.clamp(pitch, -0.35, 0.5);
   }
 
   /** Jump straight to the settled aerial pose (reduced-motion / skip). */
