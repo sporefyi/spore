@@ -12,7 +12,7 @@ import { explorerTxUrl, MARKET_MERCHANT, USDG } from '../shared/chains';
 
 const CATEGORIES: { name: string; live: boolean }[] = [
   { name: 'AI inference', live: true },
-  { name: 'GPU compute', live: true },
+  { name: 'Image generation', live: true },
   { name: 'APIs', live: true },
   { name: 'Data', live: true },
   { name: 'Storage', live: true },
