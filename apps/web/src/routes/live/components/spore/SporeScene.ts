@@ -5,6 +5,7 @@ import { COLORS, phaseAt } from './types';
 
 export interface SporeSceneOpts {
   onPhase?: (p: PhaseName) => void;
+  onFirstDrag?: () => void;
 }
 
 const clamp01 = (x: number): number => Math.min(1, Math.max(0, x));
@@ -51,7 +52,17 @@ export class SporeScene {
   private readonly pointer = { x: 0, y: 0 };
   private readonly finePointer: boolean;
   private readonly onPhase?: (p: PhaseName) => void;
+  private readonly onFirstDrag?: () => void;
   private readonly tmpV = new THREE.Vector3();
+
+  // Drag-to-turn: additive yaw/pitch orbit over the scripted camera.
+  private userYaw = 0;
+  private userPitch = 0;
+  private dragging = false;
+  private dragFired = false;
+  private lastPX = 0;
+  private lastPY = 0;
+  private readonly zeroPointer = { x: 0, y: 0 };
 
   private resizeObserver: ResizeObserver | null = null;
   private intersectionObserver: IntersectionObserver | null = null;
@@ -66,6 +77,7 @@ export class SporeScene {
   constructor(canvas: HTMLCanvasElement, opts: SporeSceneOpts = {}) {
     this.canvas = canvas;
     this.onPhase = opts.onPhase;
+    this.onFirstDrag = opts.onFirstDrag;
 
     // --- quality detection ---
     const mobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
@@ -116,15 +128,20 @@ export class SporeScene {
     this.camera = new THREE.PerspectiveCamera(38, 16 / 9, 0.5, 600);
     this.cinematic = new CinematicCamera(this.camera);
 
-    this.ctx = { scene: this.scene, camera: this.camera, quality, reducedMotion };
+    this.ctx = { scene: this.scene, camera: this.camera, quality, reducedMotion, repayments: [] };
 
     // --- sizing / visibility / pointer ---
     canvas.style.display = 'block';
     canvas.style.width = '100%';
     canvas.style.height = '100%';
+    canvas.style.cursor = 'grab';
     document.addEventListener('visibilitychange', this.handleVisibility);
     canvas.addEventListener('pointermove', this.handlePointerMove);
     canvas.addEventListener('pointerleave', this.handlePointerLeave);
+    canvas.addEventListener('pointerdown', this.handleDragStart);
+    canvas.addEventListener('pointermove', this.handleDragMove);
+    canvas.addEventListener('pointerup', this.handleDragEnd);
+    canvas.addEventListener('pointercancel', this.handleDragEnd);
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas.parentElement ?? canvas);
     this.intersectionObserver = new IntersectionObserver(
@@ -182,11 +199,15 @@ export class SporeScene {
   replay(): void {
     this.t = 0;
     this.phase = null; // re-fire onPhase for DARKNESS on the next tick
+    this.userYaw = 0;
+    this.userPitch = 0;
   }
 
   skipToEnd(): void {
     this.t = 108;
     this.phase = null;
+    this.userYaw = 0;
+    this.userPitch = 0;
     this.cinematic.snapToEnd();
   }
 
@@ -196,6 +217,10 @@ export class SporeScene {
     document.removeEventListener('visibilitychange', this.handleVisibility);
     this.canvas.removeEventListener('pointermove', this.handlePointerMove);
     this.canvas.removeEventListener('pointerleave', this.handlePointerLeave);
+    this.canvas.removeEventListener('pointerdown', this.handleDragStart);
+    this.canvas.removeEventListener('pointermove', this.handleDragMove);
+    this.canvas.removeEventListener('pointerup', this.handleDragEnd);
+    this.canvas.removeEventListener('pointercancel', this.handleDragEnd);
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     this.intersectionObserver?.disconnect();
@@ -212,7 +237,9 @@ export class SporeScene {
     const dt = Math.min(this.clock.getDelta(), 0.05);
     this.t += dt;
 
-    this.cinematic.update(this.t, dt, this.pointer);
+    this.cinematic.setUserOrbit(this.userYaw, this.userPitch);
+    // Freeze cursor parallax while dragging so the look target stays put.
+    this.cinematic.update(this.t, dt, this.dragging ? this.zeroPointer : this.pointer);
     for (const m of this.modules) m.update(dt, this.t);
     this.renderer.render(this.scene, this.camera);
 
@@ -261,5 +288,39 @@ export class SporeScene {
   private readonly handlePointerLeave = (): void => {
     this.pointer.x = 0;
     this.pointer.y = 0;
+  };
+
+  private readonly handleDragStart = (e: PointerEvent): void => {
+    if (!e.isPrimary) return;
+    this.dragging = true;
+    this.lastPX = e.clientX;
+    this.lastPY = e.clientY;
+    this.canvas.style.cursor = 'grabbing';
+    try {
+      this.canvas.setPointerCapture(e.pointerId);
+    } catch {
+      /* noop */
+    }
+  };
+
+  private readonly handleDragMove = (e: PointerEvent): void => {
+    if (!this.dragging || !e.isPrimary) return;
+    const dx = e.clientX - this.lastPX;
+    const dy = e.clientY - this.lastPY;
+    this.lastPX = e.clientX;
+    this.lastPY = e.clientY;
+    if (Math.abs(dx) + Math.abs(dy) < 2) return;
+    this.userYaw -= dx * 0.0045;
+    this.userPitch = Math.max(-0.35, Math.min(0.5, this.userPitch - dy * 0.0025));
+    if (!this.dragFired) {
+      this.dragFired = true;
+      this.onFirstDrag?.();
+    }
+  };
+
+  private readonly handleDragEnd = (): void => {
+    if (!this.dragging) return;
+    this.dragging = false;
+    this.canvas.style.cursor = 'grab';
   };
 }
