@@ -72,3 +72,38 @@ export function rpcUrl(chain: ChainConfig): string | null {
 export function explorerAddressUrl(address: string): string {
   return `${PRIMARY_CHAIN.explorerUrl}/address/${address}`;
 }
+
+/** Blockscout transaction URL for the primary chain. */
+export function explorerTxUrl(txHash: string): string {
+  return `${PRIMARY_CHAIN.explorerUrl}/tx/${txHash}`;
+}
+
+/** USDG stablecoin (6 decimals) — the asset merchants accept. */
+export const USDG = {
+  address: '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168',
+  decimals: 6,
+  symbol: 'USDG',
+} as const;
+
+/** Merchant that settles all six market services. */
+export const MARKET_MERCHANT = '0x4c7cfbd388249f3c3027c52635cf70bb78084ed5';
+
+/** Public RPC for wallet_addEthereumChain / reads. */
+export const ROBINHOOD_RPC_URL = 'https://rpc.mainnet.chain.robinhood.com';
+
+/** EIP-1193 chain-add parameters for Robinhood Chain. */
+export function robinhoodChainParams(): {
+  chainId: string;
+  chainName: string;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
+  rpcUrls: string[];
+  blockExplorerUrls: string[];
+} {
+  return {
+    chainId: `0x${PRIMARY_CHAIN.chainId.toString(16)}`,
+    chainName: PRIMARY_CHAIN.name,
+    nativeCurrency: { name: 'Ether', symbol: PRIMARY_CHAIN.nativeCurrency, decimals: 18 },
+    rpcUrls: [ROBINHOOD_RPC_URL],
+    blockExplorerUrls: [PRIMARY_CHAIN.explorerUrl],
+  };
+}
