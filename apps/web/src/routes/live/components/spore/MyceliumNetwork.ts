@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { COLORS, PHASE, type LiveContext, type LiveModule } from './types';
+import { COLORS, PHASE, type LiveContext, type LiveModule, type Repayment } from './types';
 
 /** Dark translucent ground tone, per the lane spec (reads as "beneath the surface"). */
 const GROUND_COLOR = 0x171310;
@@ -8,6 +8,8 @@ const R_MAX = 42;
 const CHUNKS = 8;
 const BASE_OPACITY = 0.5;
 const BRIGHT_OPACITY = 0.85;
+/** Hard cap on data-driven threads (perf). */
+const MAX_THREADS = 240;
 
 /** Deterministic PRNG so the network is identical on every run. */
 function mulberry32(seed: number): () => number {
@@ -21,18 +23,30 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+/** FNV-1a hash → seed, so each repayment grows the same thread every run. */
+function hashStr(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
 interface Branch {
   curve: THREE.CatmullRomCurve3;
-  depth: number;
+  /** tube radius */
+  width: number;
 }
 
 /**
  * Biological branching: smooth CatmullRom curves, gentle wander, children sprout
  * from mid-branch at soft angles. No sharp angles, no straight segments.
+ * (Procedural fallback — used when no repayments are on-chain yet.)
  */
 function generateBranches(count: number): Branch[] {
   const rng = mulberry32(77);
-  const all: Branch[] = [];
+  const all: { curve: THREE.CatmullRomCurve3; depth: number }[] = [];
 
   const grow = (start: THREE.Vector3, angle: number, length: number, depth: number): void => {
     const nPts = 4 + Math.floor(rng() * 4); // 4-7 points
@@ -88,7 +102,52 @@ function generateBranches(count: number): Branch[] {
     .map((b, i) => ({ b, i }))
     .sort((x, y) => x.b.depth - y.b.depth || x.i - y.i)
     .map((x) => x.b)
-    .slice(0, count);
+    .slice(0, count)
+    .map((b) => ({ curve: b.curve, width: Math.max(0.045, 0.14 - b.depth * 0.022) }));
+}
+
+/**
+ * One thread per repayment. Seeded by txHash (stable across runs), length and
+ * width grow with the log of the repaid amount. Threads start near the center
+ * and wander outward — each repayment becomes a spore's trail, with the spore
+ * itself glowing at the thread's tip.
+ */
+function repaymentThreads(reps: Repayment[]): { branches: Branch[]; tipNode: boolean } {
+  const list = reps.slice(0, MAX_THREADS);
+  const branches: Branch[] = [];
+  for (const r of list) {
+    const rng = mulberry32(hashStr(r.txHash));
+    const usd = Math.max(0, Number(r.amount) / 1e6);
+    const length = 7 + Math.log10(1 + usd) * 7;
+    const width = 0.06 + Math.min(0.12, Math.log10(1 + usd) * 0.05);
+    const angle = rng() * Math.PI * 2;
+    const start = new THREE.Vector3((rng() - 0.5) * 9, 0.05, (rng() - 0.5) * 9);
+    const nPts = 5 + Math.floor(rng() * 3);
+    const pts: THREE.Vector3[] = [];
+    const p = start.clone();
+    let a = angle;
+    const step = length / (nPts - 1);
+    for (let i = 0; i < nPts; i++) {
+      pts.push(p.clone());
+      a += (rng() - 0.5) * 0.8;
+      const rr = Math.hypot(p.x, p.z);
+      if (rr > 30) {
+        const home = Math.atan2(-p.z, -p.x);
+        let d = home - a;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        a += d * 0.35;
+      }
+      const nx = p.x + Math.cos(a) * step;
+      const nz = p.z + Math.sin(a) * step;
+      const nr = Math.hypot(nx, nz);
+      const cap = R_MAX - 1;
+      const y = THREE.MathUtils.clamp(0.05 + (rng() - 0.5) * 0.22, -0.06, 0.3);
+      p.set(nr > cap ? (nx / nr) * cap : nx, y, nr > cap ? (nz / nr) * cap : nz);
+    }
+    branches.push({ curve: new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.5), width });
+  }
+  return { branches, tipNode: true };
 }
 
 /** Soft round sprite shared by node dots and flow particles. */
@@ -110,23 +169,27 @@ function makeGlowTexture(): THREE.CanvasTexture {
 
 export class MyceliumNetwork implements LiveModule {
   private readonly scene: THREE.Scene;
-  private readonly chunkMeshes: THREE.Mesh[] = [];
-  private readonly chunkMats: THREE.MeshBasicMaterial[] = [];
-  private readonly chunkGeos: THREE.BufferGeometry[] = [];
-  private readonly curves: THREE.CatmullRomCurve3[] = [];
-  private readonly branchBirth: number[] = [];
+  private readonly particleMul: number;
+  private readonly mobile: boolean;
+  private repayments: Repayment[];
+
+  private chunkMeshes: THREE.Mesh[] = [];
+  private chunkMats: THREE.MeshBasicMaterial[] = [];
+  private chunkGeos: THREE.BufferGeometry[] = [];
+  private curves: THREE.CatmullRomCurve3[] = [];
+  private branchBirth: number[] = [];
 
   private groundMesh!: THREE.Mesh;
   private groundGeo!: THREE.CircleGeometry;
   private groundMat!: THREE.MeshStandardMaterial;
 
-  private nodePoints!: THREE.Points;
-  private nodeGeo!: THREE.BufferGeometry;
-  private nodeMat!: THREE.PointsMaterial;
+  private nodePoints: THREE.Points | null = null;
+  private nodeGeo: THREE.BufferGeometry | null = null;
+  private nodeMat: THREE.PointsMaterial | null = null;
 
-  private flowPoints!: THREE.Points;
-  private flowGeo!: THREE.BufferGeometry;
-  private flowMat!: THREE.PointsMaterial;
+  private flowPoints: THREE.Points | null = null;
+  private flowGeo: THREE.BufferGeometry | null = null;
+  private flowMat: THREE.PointsMaterial | null = null;
   private flowPos: Float32Array = new Float32Array(0);
   private flowCurve: Uint16Array = new Uint16Array(0);
   private flowOffset: Float32Array = new Float32Array(0);
@@ -138,12 +201,9 @@ export class MyceliumNetwork implements LiveModule {
 
   constructor(ctx: LiveContext) {
     this.scene = ctx.scene;
-    const mobile = ctx.quality.tier === 'mobile';
-    const branchCount = mobile ? 36 : 90;
-    this.flowCount = Math.round(600 * ctx.quality.particleMul);
-
-    const g0 = PHASE.MYCELIUM[0];
-    const g1 = PHASE.MYCELIUM[1];
+    this.mobile = ctx.quality.tier === 'mobile';
+    this.particleMul = ctx.quality.particleMul;
+    this.repayments = ctx.repayments ?? [];
     this.glowTex = makeGlowTexture();
 
     // --- ground disc (dark translucent "surface") ---
@@ -161,17 +221,35 @@ export class MyceliumNetwork implements LiveModule {
     this.groundMesh.renderOrder = 1;
     this.scene.add(this.groundMesh);
 
-    // --- branches, merged into chronological chunks for staggered growth ---
-    const branches = generateBranches(branchCount);
+    this.buildBranches();
+  }
+
+  /**
+   * Swap the thread set once chain data arrives. Rebuilds branch geometry,
+   * node spores and flow particles; the ground disc is untouched.
+   */
+  setRepayments(reps: Repayment[]): void {
+    this.repayments = reps;
+    this.disposeBranches();
+    this.buildBranches();
+  }
+
+  private buildBranches(): void {
+    const g0 = PHASE.MYCELIUM[0];
+    const g1 = PHASE.MYCELIUM[1];
+    const branchCount = this.mobile ? 36 : 90;
+    const data = this.repayments.length > 0 ? repaymentThreads(this.repayments) : null;
+    const branches = data ? data.branches : generateBranches(branchCount);
+    const tipNode = data ? data.tipNode : false;
+
     for (const b of branches) this.curves.push(b.curve);
-    const perChunk = Math.ceil(branches.length / CHUNKS);
+    const perChunk = Math.max(1, Math.ceil(branches.length / CHUNKS));
     for (let c = 0; c < CHUNKS; c++) {
       const list = branches.slice(c * perChunk, (c + 1) * perChunk);
       if (list.length === 0) continue;
       const tubes: THREE.BufferGeometry[] = [];
       for (const b of list) {
-        const radius = Math.max(0.045, 0.14 - b.depth * 0.022);
-        tubes.push(new THREE.TubeGeometry(b.curve, 12, radius, 5, false));
+        tubes.push(new THREE.TubeGeometry(b.curve, 12, b.width, 5, false));
         this.branchBirth.push(g0 + (c / CHUNKS) * (g1 - g0));
       }
       const merged = mergeGeometries(tubes, false);
@@ -192,16 +270,16 @@ export class MyceliumNetwork implements LiveModule {
       this.chunkGeos.push(merged);
     }
 
-    // --- node dots at branch origins ---
+    // --- node spores: one per thread (tips in data mode, origins in fallback) ---
     const nrng = mulberry32(7);
     const moss = new THREE.Color(COLORS.moss);
     const ivory = new THREE.Color(COLORS.ivory);
     const nodePos = new Float32Array(branches.length * 3);
     const nodeCol = new Float32Array(branches.length * 3);
     for (let i = 0; i < branches.length; i++) {
-      const p0 = branches[i].curve.getPointAt(0);
+      const p0 = branches[i].curve.getPointAt(tipNode ? 1 : 0);
       nodePos[i * 3] = p0.x;
-      nodePos[i * 3 + 1] = p0.y + 0.1;
+      nodePos[i * 3 + 1] = p0.y + 0.12;
       nodePos[i * 3 + 2] = p0.z;
       const col = nrng() < 0.25 ? ivory : moss;
       nodeCol[i * 3] = col.r;
@@ -228,6 +306,7 @@ export class MyceliumNetwork implements LiveModule {
     // --- flow particles travelling along the branches ---
     const frng = mulberry32(1234);
     const amber = new THREE.Color(COLORS.fungal);
+    this.flowCount = Math.round(600 * this.particleMul);
     this.flowCurve = new Uint16Array(this.flowCount);
     this.flowOffset = new Float32Array(this.flowCount);
     this.flowSpeed = new Float32Array(this.flowCount);
@@ -262,6 +341,33 @@ export class MyceliumNetwork implements LiveModule {
     this.scene.add(this.flowPoints);
   }
 
+  private disposeBranches(): void {
+    for (const m of this.chunkMeshes) this.scene.remove(m);
+    for (const g of this.chunkGeos) g.dispose();
+    for (const m of this.chunkMats) m.dispose();
+    this.chunkMeshes = [];
+    this.chunkMats = [];
+    this.chunkGeos = [];
+    this.curves = [];
+    this.branchBirth = [];
+    if (this.nodePoints) {
+      this.scene.remove(this.nodePoints);
+      this.nodeGeo?.dispose();
+      this.nodeMat?.dispose();
+      this.nodePoints = null;
+      this.nodeGeo = null;
+      this.nodeMat = null;
+    }
+    if (this.flowPoints) {
+      this.scene.remove(this.flowPoints);
+      this.flowGeo?.dispose();
+      this.flowMat?.dispose();
+      this.flowPoints = null;
+      this.flowGeo = null;
+      this.flowMat = null;
+    }
+  }
+
   update(_dt: number, t: number): void {
     const g0 = PHASE.MYCELIUM[0];
     const g1 = PHASE.MYCELIUM[1];
@@ -289,41 +395,35 @@ export class MyceliumNetwork implements LiveModule {
 
     // ground fades in during DARKNESS; dots + flow follow the growth
     this.groundMat.opacity = 0.82 * THREE.MathUtils.clamp(t / 4, 0, 1);
-    this.nodeMat.opacity = 0.9 * growthAll;
-    this.flowMat.opacity = Math.min(1, 0.8 * growthAll * (t >= a0 ? 1.2 : 1));
+    if (this.nodeMat) this.nodeMat.opacity = 0.9 * growthAll;
+    if (this.flowMat) this.flowMat.opacity = Math.min(1, 0.8 * growthAll * (t >= a0 ? 1.2 : 1));
 
     // flow particles crawl along their branch once it has grown
-    const pos = this.flowPos;
-    for (let i = 0; i < this.flowCount; i++) {
-      const bi = this.flowCurve[i];
-      const age = t - this.branchBirth[bi];
-      const j = i * 3;
-      if (age <= 0) {
-        pos[j + 1] = -50;
-        continue;
+    if (this.flowGeo) {
+      const pos = this.flowPos;
+      for (let i = 0; i < this.flowCount; i++) {
+        const bi = this.flowCurve[i];
+        const age = t - this.branchBirth[bi];
+        const j = i * 3;
+        if (age <= 0) {
+          pos[j + 1] = -50;
+          continue;
+        }
+        const u = (this.flowOffset[i] + age * this.flowSpeed[i]) % 1;
+        const pt = this.curves[bi].getPointAt(u, this.scratch);
+        pos[j] = pt.x;
+        pos[j + 1] = pt.y + 0.12;
+        pos[j + 2] = pt.z;
       }
-      const u = (this.flowOffset[i] + age * this.flowSpeed[i]) % 1;
-      const pt = this.curves[bi].getPointAt(u, this.scratch);
-      pos[j] = pt.x;
-      pos[j + 1] = pt.y + 0.12;
-      pos[j + 2] = pt.z;
+      this.flowGeo.attributes.position.needsUpdate = true;
     }
-    this.flowGeo.attributes.position.needsUpdate = true;
   }
 
   dispose(): void {
+    this.disposeBranches();
     this.scene.remove(this.groundMesh);
     this.groundGeo.dispose();
     this.groundMat.dispose();
-    for (const m of this.chunkMeshes) this.scene.remove(m);
-    for (const g of this.chunkGeos) g.dispose();
-    for (const m of this.chunkMats) m.dispose();
-    this.scene.remove(this.nodePoints);
-    this.nodeGeo.dispose();
-    this.nodeMat.dispose();
-    this.scene.remove(this.flowPoints);
-    this.flowGeo.dispose();
-    this.flowMat.dispose();
     this.glowTex.dispose();
   }
 }
