@@ -11,6 +11,7 @@ import {
   LedgerTable,
 } from '../shared/components/primitives'
 import { provider } from '../shared/data/providers'
+import { PRIMARY_CHAIN } from '../shared/chains'
 import type { NetworkStats, Repayment } from '../shared/types'
 import type { Voxel } from '../shared/components/voxelModel'
 import SporeTokenBadge from '../shared/components/SporeTokenBadge'
@@ -20,13 +21,12 @@ const VoxelMushroom = lazy(() => import('../shared/components/VoxelMushroom'))
 type LedgerRow = {
   id: string
   block: string
+  txHash: string
   agent: string
   event: string
   amount: string
   time: string
 }
-
-const LEDGER_ROWS: LedgerRow[] = []
 
 const PASSPORT: ReadonlyArray<{ label: string; value: string; kind: 'serif' | 'score' | 'mono' }> = [
   { label: 'AGENT', value: 'research.bot', kind: 'serif' },
@@ -151,6 +151,27 @@ export default function Home() {
     () => (repayments === null ? undefined : repaymentSpores(repayments)),
     [repayments]
   )
+  /** Newest-first ledger rows, built from the same on-chain repayments. */
+  const ledgerRows = useMemo<LedgerRow[]>(() => {
+    if (!repayments) return []
+    return [...repayments]
+      .reverse()
+      .slice(0, 15)
+      .map((r) => ({
+        id: r.txHash,
+        block: `#${r.blockNumber.toLocaleString('en-US')}`,
+        txHash: r.txHash,
+        agent: `#${r.agentId}`,
+        event: 'Repay',
+        amount: `$${(Number(r.amount) / 1e6).toFixed(2)}`,
+        time: new Date(r.t).toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      }))
+  }, [repayments])
   const fmtUsd = (v: number | null) =>
     v === null ? '—' : `$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
   return (
@@ -439,17 +460,36 @@ export default function Home() {
         <div className="mt-16">
           <LedgerTable<LedgerRow>
             columns={[
-              { key: 'block', header: 'Block', mono: true, render: (r) => r.block },
+              {
+                key: 'block',
+                header: 'Block',
+                mono: true,
+                render: (r) => (
+                  <a
+                    href={`${PRIMARY_CHAIN.explorerUrl}/tx/${r.txHash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-rule-strong underline-offset-4 hover:decoration-ink"
+                  >
+                    {r.block}
+                  </a>
+                ),
+              },
               { key: 'agent', header: 'Agent', render: (r) => r.agent },
               { key: 'event', header: 'Event', render: (r) => r.event },
-              { key: 'amount', header: 'Amount', mono: true, render: (r) => r.amount },
-              { key: 'time', header: 'Time', mono: true, render: (r) => r.time },
+              { key: 'amount', header: 'Amount', mono: true, align: 'right', render: (r) => r.amount },
+              { key: 'time', header: 'Time', mono: true, align: 'right', render: (r) => r.time },
             ]}
-            rows={LEDGER_ROWS}
+            rows={ledgerRows}
             keyOf={(r) => r.id}
             emptyTitle="No entries yet"
             emptyCopy="The ledger is live. Every row traces to a real on-chain transaction — the first entries are still settling."
           />
+          {repayments !== null && repayments.length > ledgerRows.length && (
+            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
+              Showing the latest {ledgerRows.length} of {repayments.length} on-chain repayments — newest first.
+            </p>
+          )}
         </div>
       </section>
 
