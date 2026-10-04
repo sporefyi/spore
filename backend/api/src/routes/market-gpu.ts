@@ -19,7 +19,8 @@ const MERCHANT = "0x4c7cfbd388249f3c3027c52635cf70bb78084ed5";
 const PRICE = 1_000_000n; // 1 USDG (6 decimals)
 const REPLICATE_URL = "https://api.replicate.com/v1/predictions";
 // Flux Schnell — fast, high-quality image generation
-const MODEL_VERSION = "black-forest-labs/flux-schnell";
+const MODEL = "black-forest-labs/flux-schnell";
+const MODEL_VERSION = "c846a69991daf4c0e5d016514849d14ee5b2e6846ce6b9d6f21369e564cfe51e";
 const UPSTREAM_TIMEOUT_MS = 180_000;
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLLS = 40;
@@ -79,7 +80,7 @@ async function runReplicate(apiKey: string, prompt: string, logger: AppDeps["log
       Authorization: `Token ${apiKey}`,
     },
     body: JSON.stringify({
-      model: MODEL_VERSION,
+      version: MODEL_VERSION,
       input: { prompt, num_outputs: 1, aspect_ratio: "1:1", output_format: "png" },
     }),
     signal: AbortSignal.timeout(30000),
@@ -152,10 +153,10 @@ export function registerMarketGpu(v1: FastifyInstance, deps: AppDeps): void {
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (payment_tx) DO NOTHING
        RETURNING id`,
-      [MODEL_VERSION, prompt, paymentTx.toLowerCase(), payer, JSON.stringify(outputUrls)],
+      [MODEL, prompt, paymentTx.toLowerCase(), payer, JSON.stringify(outputUrls)],
     );
     const id = r.rows[0]?.id ?? null;
     logger.info({ id, payer, prompt: prompt.slice(0, 50) }, "gpu generation complete");
-    return reply.send({ id, model: MODEL_VERSION, prompt, images: outputUrls });
+    return reply.send({ id, model: MODEL, prompt, images: outputUrls });
   });
 }
