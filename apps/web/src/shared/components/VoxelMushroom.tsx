@@ -18,6 +18,12 @@ import VoxelMushroomFallback from './VoxelMushroomFallback';
 export interface VoxelMushroomProps {
   onReadOrganism: () => void;
   className?: string;
+  /**
+   * Override the spore field. When undefined the model's procedural spores are
+   * used; pass [] for a truly empty mycelium, or chain-read repayments mapped
+   * to spore voxels.
+   */
+  spores?: Voxel[];
 }
 
 export interface NdcPoint {
@@ -287,6 +293,7 @@ type VoxelModelT = ReturnType<typeof buildModel>;
 
 function Rig(props: {
   model: VoxelModelT;
+  spores?: Voxel[];
   hovered: boolean;
   hoveredRef: MutableRefObject<boolean>;
   pointerRef: MutableRefObject<NdcPoint>;
@@ -309,7 +316,7 @@ function Rig(props: {
     return out;
   }, [model]);
 
-  const spores = (model as unknown as { spores: Voxel[] }).spores;
+  const spores = props.spores ?? (model as unknown as { spores: Voxel[] }).spores;
 
   useFrame((state, dt) => {
     const api = apiRef.current;
@@ -395,7 +402,7 @@ const ctaButtonStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
-export default function VoxelMushroom({ onReadOrganism, className }: VoxelMushroomProps) {
+export default function VoxelMushroom({ onReadOrganism, className, spores }: VoxelMushroomProps) {
   const [webglOk] = useState<boolean>(() => {
     if (typeof document === 'undefined') return true;
     try {
@@ -633,6 +640,7 @@ export default function VoxelMushroom({ onReadOrganism, className }: VoxelMushro
         <InvalidateHandle invalidateRef={invalidateRef} />
         <Rig
           model={model}
+          spores={spores}
           hovered={hovered}
           hoveredRef={hoveredRef}
           pointerRef={pointerRef}
