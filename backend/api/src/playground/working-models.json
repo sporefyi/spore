@@ -291,6 +291,11 @@
    "name": "mercury-2"
   },
   {
+   "id": "inference-net/schematron-v2-turbo",
+   "type": "chat",
+   "name": "schematron-v2-turbo"
+  },
+  {
    "id": "meituan/longcat-2.0",
    "type": "chat",
    "name": "longcat-2.0"
@@ -931,6 +936,11 @@
    "name": "unslopnemo-12b"
   },
   {
+   "id": "unbiased/pareto",
+   "type": "chat",
+   "name": "pareto"
+  },
+  {
    "id": "upstage/solar-pro-3",
    "type": "chat",
    "name": "solar-pro-3"
@@ -1041,6 +1051,16 @@
    "name": "claude-opus-latest"
   },
   {
+   "id": "~deepseek/deepseek-flash-latest",
+   "type": "chat",
+   "name": "deepseek-flash-latest"
+  },
+  {
+   "id": "~deepseek/deepseek-pro-latest",
+   "type": "chat",
+   "name": "deepseek-pro-latest"
+  },
+  {
    "id": "~deepseek/deepseek-v4-flash-latest",
    "type": "chat",
    "name": "deepseek-v4-flash-latest"
@@ -1063,5 +1083,5 @@
  ],
  "probed_at": "2026-10-04",
  "total_tested": 625,
- "working": 212
+ "working": 216
 }
