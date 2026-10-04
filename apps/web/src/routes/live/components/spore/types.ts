@@ -1,8 +1,9 @@
 import * as THREE from 'three';
+import type { Repayment } from '../../../../shared/types';
 
+export type { Repayment };
 export interface QualityTier { tier: 'high' | 'mobile'; particleMul: number; dpr: number; shadows: boolean; }
-/** One on-chain repayment (CreditManager Repay event, via the indexer API). amount is in smallest units (6dp). */
-export interface Repayment { agentId: string; amount: string; txHash: string; blockNumber: number; t: string; }
+/** One on-chain repayment — see shared/types. amount is in smallest units (6dp). */
 export interface LiveContext { scene: THREE.Scene; camera: THREE.PerspectiveCamera; quality: QualityTier; reducedMotion: boolean; repayments: Repayment[]; }
 export interface LiveModule { update(dt: number, t: number): void; dispose(): void; }
 export interface ParticleSystem { spawnPulse(from: THREE.Vector3, to: THREE.Vector3, color: number): void; }
