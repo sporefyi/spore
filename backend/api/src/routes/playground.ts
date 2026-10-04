@@ -640,6 +640,42 @@ export function registerPlayground(v1: FastifyInstance, deps: AppDeps): void {
     return reply.send(loadWorkingModels());
   });
 
+  // --- GET /api/v1/playground/stats -------------------------------------------
+  v1.get("/playground/stats", async (_req, reply) => {
+    const [burns, usage, wallets] = await Promise.all([
+      pg.query(
+        `SELECT COALESCE(SUM(spore_amount::numeric), 0) AS total_spore,
+                COALESCE(SUM(credits_granted), 0) AS total_credits_granted,
+                COUNT(*) AS burn_count
+         FROM playground_burns`
+      ),
+      pg.query(
+        `SELECT COALESCE(SUM(credits_spent), 0) AS total_spent,
+                COUNT(*) AS call_count,
+                COUNT(DISTINCT wallet) AS active_wallets
+         FROM playground_usage`
+      ),
+      pg.query(
+        `SELECT COUNT(DISTINCT wallet) AS funded_wallets,
+                COALESCE(SUM(balance), 0) AS credits_outstanding
+         FROM playground_credits`
+      ),
+    ]);
+    return reply.send({
+      ok: true,
+      data: {
+        totalSporeBurned: burns.rows[0].total_spore,
+        totalCreditsGranted: burns.rows[0].total_credits_granted,
+        burnCount: Number(burns.rows[0].burn_count),
+        totalCreditsSpent: usage.rows[0].total_spent,
+        totalCalls: Number(usage.rows[0].call_count),
+        activeWallets: Number(usage.rows[0].active_wallets),
+        fundedWallets: Number(wallets.rows[0].funded_wallets),
+        creditsOutstanding: wallets.rows[0].credits_outstanding,
+      },
+    });
+  });
+
   // --- POST /api/v1/playground/chat -------------------------------------------
   v1.post("/playground/chat", async (req, reply) => {
     const body = (req.body ?? {}) as AuthBody & Record<string, unknown>;
