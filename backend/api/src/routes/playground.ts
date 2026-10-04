@@ -642,12 +642,18 @@ export function registerPlayground(v1: FastifyInstance, deps: AppDeps): void {
 
   // --- GET /api/v1/playground/stats -------------------------------------------
   v1.get("/playground/stats", async (_req, reply) => {
-    const [burns, usage, wallets] = await Promise.all([
+    const [burns, merchant, usage, wallets] = await Promise.all([
       db.query(
         `SELECT COALESCE(SUM(spore_amount::numeric), 0) AS total_spore,
                 COALESCE(SUM(credits_granted), 0) AS total_credits_granted,
                 COUNT(*) AS burn_count
          FROM playground_burns`
+      ),
+      db.query(
+        `SELECT COALESCE(SUM(usdg_amount::numeric), 0) AS total_usdg,
+                COALESCE(SUM(credits_granted), 0) AS total_credits_granted,
+                COUNT(*) AS spend_count
+         FROM playground_merchant_spends`
       ),
       db.query(
         `SELECT COALESCE(SUM(credits_spent), 0) AS total_spent,
@@ -656,8 +662,8 @@ export function registerPlayground(v1: FastifyInstance, deps: AppDeps): void {
          FROM playground_usage`
       ),
       db.query(
-        `SELECT COUNT(DISTINCT wallet) AS funded_wallets,
-                COALESCE(SUM(balance), 0) AS credits_outstanding
+        `SELECT COUNT(*) AS funded_wallets,
+                COALESCE(SUM(credits), 0) AS credits_outstanding
          FROM playground_credits`
       ),
     ]);
@@ -665,8 +671,12 @@ export function registerPlayground(v1: FastifyInstance, deps: AppDeps): void {
       ok: true,
       data: {
         totalSporeBurned: burns.rows[0].total_spore,
-        totalCreditsGranted: burns.rows[0].total_credits_granted,
+        totalUsdgSpent: merchant.rows[0].total_usdg,
+        totalCreditsGranted:
+          Number(burns.rows[0].total_credits_granted) +
+          Number(merchant.rows[0].total_credits_granted),
         burnCount: Number(burns.rows[0].burn_count),
+        merchantSpendCount: Number(merchant.rows[0].spend_count),
         totalCreditsSpent: usage.rows[0].total_spent,
         totalCalls: Number(usage.rows[0].call_count),
         activeWallets: Number(usage.rows[0].active_wallets),
