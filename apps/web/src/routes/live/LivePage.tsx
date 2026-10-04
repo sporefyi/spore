@@ -7,8 +7,9 @@ import { SporeParticles } from './components/spore/SporeParticles';
 import { MarketScene } from './components/spore/MarketScene';
 import { AgentWorld } from './components/spore/AgentWorld';
 import { ServiceZone } from './components/spore/ServiceZone';
-import { fetchRepayments, refreshRepayments } from './components/spore/repayments';
-import type { PhaseName, Repayment, ZoneInfo } from './components/spore/types';
+import { provider } from '../../shared/data/providers';
+import type { PhaseName, ZoneInfo } from './components/spore/types';
+import type { Repayment } from '../../shared/types';
 import { PHASE_ORDER } from './components/spore/types';
 
 /** The engine's final phase ('LIVE') — the end card rises when it fires. */
@@ -162,11 +163,20 @@ export default function LivePage() {
       ctx.repayments = reps;
       myceliumRef.current?.setRepayments(reps);
     };
-    fetchRepayments().then(applyRepayments);
+    const fetchRepayments = () => {
+      provider.getRepayments().then(applyRepayments).catch(() => {});
+    };
+    const refreshRepayments = () => {
+      provider
+        .getRepayments()
+        .then((reps) => {
+          if (reps.length !== repayCountRef.current) applyRepayments(reps);
+        })
+        .catch(() => {});
+    };
+    fetchRepayments();
     const repayTimer = window.setInterval(() => {
-      refreshRepayments().then((reps) => {
-        if (reps.length !== repayCountRef.current) applyRepayments(reps);
-      });
+      refreshRepayments();
     }, 120000);
 
     const zs = serviceZone.getZones();
