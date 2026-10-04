@@ -11,6 +11,7 @@ const Protocol = lazy(() => import('./routes/Protocol'));
 const Contracts = lazy(() => import('./routes/Contracts'));
 const Developers = lazy(() => import('./routes/Developers'));
 const Connect = lazy(() => import('./routes/Connect'));
+const Live = lazy(() => import('./routes/live/LivePage'));
 
 function NotFound() {
   return (
@@ -73,6 +74,7 @@ export default function App() {
               <Route path="/contracts" element={<Contracts />} />
               <Route path="/developers" element={<Developers />} />
               <Route path="/connect" element={<Connect />} />
+              <Route path="/live" element={<Live />} />
               <Route path="/passport" element={<Navigate to="/agents" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
