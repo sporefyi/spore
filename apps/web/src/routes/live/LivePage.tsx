@@ -7,7 +7,8 @@ import { SporeParticles } from './components/spore/SporeParticles';
 import { MarketScene } from './components/spore/MarketScene';
 import { AgentWorld } from './components/spore/AgentWorld';
 import { ServiceZone } from './components/spore/ServiceZone';
-import type { PhaseName, ZoneInfo } from './components/spore/types';
+import { fetchRepayments, refreshRepayments } from './components/spore/repayments';
+import type { PhaseName, Repayment, ZoneInfo } from './components/spore/types';
 import { PHASE_ORDER } from './components/spore/types';
 
 /** The engine's final phase ('LIVE') — the end card rises when it fires. */
@@ -24,7 +25,14 @@ const PHASE_CAPTIONS: Record<PhaseName, string> = {
   LIVE: '08 — LIVE',
 };
 
-function captionFor(phase: PhaseName): string {
+function captionFor(phase: PhaseName, repayCount: number | null): string {
+  if (phase === 'MYCELIUM') {
+    if (repayCount === null) return '02 — MYCELIUM';
+    if (repayCount === 0)
+      return 'The mycelium is empty — for now. Every repayment becomes a spore, read from the chain.';
+    const s = repayCount === 1 ? '' : 's';
+    return `${repayCount} repayment${s} on-chain — every repayment a spore, read from the chain.`;
+  }
   return PHASE_CAPTIONS[phase] ?? String(phase).replace(/[_-]+/g, ' ').toUpperCase();
 }
 
@@ -46,6 +54,8 @@ export default function LivePage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const engineRef = useRef<SporeScene | null>(null);
+  const myceliumRef = useRef<MyceliumNetwork | null>(null);
+  const repayCountRef = useRef<number | null>(null);
   const zonesRef = useRef<ZoneInfo[]>([]);
   const activeZonesRef = useRef<Set<string>>(new Set());
   const labelElsRef = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -56,6 +66,8 @@ export default function LivePage() {
   const [zones, setZones] = useState<ZoneInfo[]>([]);
   const [phase, setPhase] = useState<PhaseName | null>(null);
   const [ended, setEnded] = useState(false);
+  const [repayCount, setRepayCount] = useState<number | null>(null);
+  const [dragged, setDragged] = useState(false);
   const [reducedMotion] = useState<boolean>(
     () =>
       typeof window !== 'undefined' &&
@@ -117,6 +129,7 @@ export default function LivePage() {
         setPhase(p);
         if (p === TERMINAL_PHASE) markEnded();
       },
+      onFirstDrag: () => setDragged(true),
     });
     engineRef.current = engine;
 
@@ -130,12 +143,31 @@ export default function LivePage() {
       },
     });
 
+    const mycelium = new MyceliumNetwork(ctx);
+    myceliumRef.current = mycelium;
+
     engine.addModule(new SporeMushroom(ctx));
-    engine.addModule(new MyceliumNetwork(ctx));
+    engine.addModule(mycelium);
     engine.addModule(particles);
     engine.addModule(new MarketScene(ctx));
     engine.addModule(new AgentWorld(ctx, particles));
     engine.addModule(serviceZone);
+
+    // Chain data: every on-chain repayment becomes a spore thread in the
+    // mycelium. Resolves [] on failure — the procedural fallback stays.
+    // Re-reads every 2 minutes so new repayments grow new threads live.
+    const applyRepayments = (reps: Repayment[]) => {
+      repayCountRef.current = reps.length;
+      setRepayCount(reps.length);
+      ctx.repayments = reps;
+      myceliumRef.current?.setRepayments(reps);
+    };
+    fetchRepayments().then(applyRepayments);
+    const repayTimer = window.setInterval(() => {
+      refreshRepayments().then((reps) => {
+        if (reps.length !== repayCountRef.current) applyRepayments(reps);
+      });
+    }, 120000);
 
     const zs = serviceZone.getZones();
     zonesRef.current = zs;
@@ -167,8 +199,10 @@ export default function LivePage() {
       cancelAnimationFrame(raf);
       cancelAnimationFrame(readyRaf);
       window.clearTimeout(readyTimer);
+      window.clearInterval(repayTimer);
       engine.dispose();
       engineRef.current = null;
+      myceliumRef.current = null;
       zonesRef.current = [];
       activeZonesRef.current = new Set();
       labelElsRef.current.clear();
@@ -248,8 +282,15 @@ export default function LivePage() {
 
             {/* Phase caption */}
             {phase && !ended && (
-              <p className="pointer-events-none absolute bottom-4 left-4 z-20 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/60">
-                {captionFor(phase)}
+              <p className="pointer-events-none absolute bottom-4 left-4 z-20 max-w-[60%] font-mono text-[10px] uppercase leading-relaxed tracking-[0.22em] text-ink/60">
+                {captionFor(phase, repayCount)}
+              </p>
+            )}
+
+            {/* Drag hint — fades after the first drag */}
+            {!dragged && !ended && phase && (phase === 'DARKNESS' || phase === 'MYCELIUM' || phase === 'MARKET') && (
+              <p className="pointer-events-none absolute bottom-4 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.22em] text-ink/50">
+                Drag to turn it
               </p>
             )}
 
