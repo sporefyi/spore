@@ -499,7 +499,6 @@ export default function Home() {
             </>
           )}
         </div>
-        </div>
       </section>
 
       {/* 7. LINEAGE */}
