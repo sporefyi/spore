@@ -66,6 +66,20 @@ function SporeMark() {
   );
 }
 
+function XIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z" />
+    </svg>
+  );
+}
+
 function navLinkClass({ isActive }: { isActive: boolean }): string {
   return [
     monoLabel,
@@ -101,18 +115,29 @@ export function Navbar() {
           ))}
         </nav>
 
-        <NavLink
-          to="/connect"
-          className={({ isActive }) =>
-            [
-              monoLabel,
-              "order-2 transition-colors hover:text-ink md:order-3",
-              isActive ? "text-ink" : "text-muted",
-            ].join(" ")
-          }
-        >
-          Connect
-        </NavLink>
+        <div className="order-2 flex items-center gap-5 md:order-3">
+          <NavLink
+            to="/connect"
+            className={({ isActive }) =>
+              [
+                monoLabel,
+                "transition-colors hover:text-ink",
+                isActive ? "text-ink" : "text-muted",
+              ].join(" ")
+            }
+          >
+            Connect
+          </NavLink>
+          <a
+            href="https://x.com/SporeFyi"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="SPORE on X"
+            className="text-muted transition-colors hover:text-ink"
+          >
+            <XIcon />
+          </a>
+        </div>
       </div>
       <div className="border-t border-rule">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-8 gap-y-1 px-6 py-2">
