@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 
 export interface QualityTier { tier: 'high' | 'mobile'; particleMul: number; dpr: number; shadows: boolean; }
-export interface LiveContext { scene: THREE.Scene; camera: THREE.PerspectiveCamera; quality: QualityTier; reducedMotion: boolean; }
+/** One on-chain repayment (CreditManager Repay event, via the indexer API). amount is in smallest units (6dp). */
+export interface Repayment { agentId: string; amount: string; txHash: string; blockNumber: number; t: string; }
+export interface LiveContext { scene: THREE.Scene; camera: THREE.PerspectiveCamera; quality: QualityTier; reducedMotion: boolean; repayments: Repayment[]; }
 export interface LiveModule { update(dt: number, t: number): void; dispose(): void; }
 export interface ParticleSystem { spawnPulse(from: THREE.Vector3, to: THREE.Vector3, color: number): void; }
 export interface ZoneInfo { id: string; label: string; anchor: THREE.Vector3; }
