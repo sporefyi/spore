@@ -8,6 +8,7 @@ const Agents = lazy(() => import('./routes/Agents'));
 const Passport = lazy(() => import('./routes/Passport'));
 const Market = lazy(() => import('./routes/Market'));
 const Protocol = lazy(() => import('./routes/Protocol'));
+const Contracts = lazy(() => import('./routes/Contracts'));
 const Developers = lazy(() => import('./routes/Developers'));
 const Connect = lazy(() => import('./routes/Connect'));
 
@@ -69,6 +70,7 @@ export default function App() {
               <Route path="/passport/:agent" element={<Passport />} />
               <Route path="/market" element={<Market />} />
               <Route path="/protocol" element={<Protocol />} />
+              <Route path="/contracts" element={<Contracts />} />
               <Route path="/developers" element={<Developers />} />
               <Route path="/connect" element={<Connect />} />
               <Route path="/passport" element={<Navigate to="/agents" replace />} />
