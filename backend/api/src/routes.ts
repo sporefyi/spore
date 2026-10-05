@@ -12,6 +12,7 @@ import { registerMarketRpc } from "./routes/market-rpc.js";
 import { registerMarketSearch } from "./routes/market-search.js";
 import { registerMarketInference } from "./routes/market-inference.js";
 import { registerMarketGpu } from "./routes/market-gpu.js";
+import { registerMarketRunpod } from "./routes/market-runpod.js";
 import { registerPlayground } from "./routes/playground.js";
 
 export function registerRoutes(app: FastifyInstance, deps: AppDeps): void {
@@ -29,6 +30,7 @@ export function registerRoutes(app: FastifyInstance, deps: AppDeps): void {
       registerMarketSearch(v1, deps);
       registerMarketInference(v1, deps);
       registerMarketGpu(v1, deps);
+      registerMarketRunpod(v1, deps);
       registerPlayground(v1, deps);
     },
     { prefix: "/api/v1" },
