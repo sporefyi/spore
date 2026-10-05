@@ -4,9 +4,10 @@ import { sendError } from "./util.js";
 import { ethers } from "ethers";
 
 /**
- * SPORE GPU rentals — real GPU rental via RunPod, paid in USDG.
+ * SPORE GPU rentals — real GPU rental via RunPod, paid in SPORE.
  *
- * GET  /api/v1/market/gpu/catalog — GPU types with live $/hr pricing (cached).
+ * GET  /api/v1/market/gpu/catalog — GPU types with live $/hr pricing and the
+ *        SPORE-denominated price (converted at the live SPORE/USD rate, cached).
  * POST /api/v1/market/gpu/rent     — rent a GPU for N hours. Body: { gpuTypeId, hours, paymentTx }
  * GET  /api/v1/market/gpu/rentals/:id — rental status + live pod status/ports.
  *
@@ -14,6 +15,9 @@ import { ethers } from "ethers";
  */
 
 const MERCHANT = "0x4c7cfbd388249f3c3027c52635cf70bb78084ed5";
+const SPORE_TOKEN = "0xa5127fae2d0986a4cb6619b9c4ec53461726454b";
+const SPORE_DECIMALS = 18;
+const SPORE_SYMBOL = "SPORE";
 const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
@@ -27,6 +31,38 @@ const POD_PORTS = "8888/http,22/tcp";
 const MAX_HOURS = 12;
 
 const CATALOG_TTL_MS = 10 * 60 * 1000;
+const SPORE_PRICE_TTL_MS = 5 * 60 * 1000;
+const SPORE_PRICE_URL = `https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/${SPORE_TOKEN}`;
+
+let sporePriceCache: { at: number; usd: number } | null = null;
+
+/** Live SPORE/USD price (GeckoTerminal, cached 5 min). Throws when unavailable. */
+async function getSporeUsd(): Promise<number> {
+  const now = Date.now();
+  if (sporePriceCache && now - sporePriceCache.at < SPORE_PRICE_TTL_MS) return sporePriceCache.usd;
+  const res = await fetch(SPORE_PRICE_URL, {
+    headers: { Accept: "application/json", "User-Agent": UA },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) {
+    if (sporePriceCache) return sporePriceCache.usd; // stale is better than nothing
+    throw new Error(`spore price http ${res.status}`);
+  }
+  const json = (await res.json()) as { data?: { attributes?: { price_usd?: string } } };
+  const usd = Number.parseFloat(json.data?.attributes?.price_usd ?? "");
+  if (!Number.isFinite(usd) || usd <= 0) {
+    if (sporePriceCache) return sporePriceCache.usd;
+    throw new Error("spore price unavailable");
+  }
+  sporePriceCache = { at: now, usd };
+  return usd;
+}
+
+/** Convert a USD amount to whole SPORE units (rounded up). */
+function usdToSporeUnits(usd: number, sporeUsd: number): bigint {
+  const units = (usd / sporeUsd) * 10 ** SPORE_DECIMALS;
+  return BigInt(Math.ceil(units - 1e-9));
+}
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 20;
@@ -102,7 +138,7 @@ async function fetchCatalog(apiKey: string): Promise<GpuType[]> {
   return gpus;
 }
 
-/** Verify paymentTx contains a USDG transfer of >= amount to MERCHANT. Returns payer or null. */
+/** Verify paymentTx contains a SPORE (or asset) transfer of >= amount to MERCHANT. Returns payer or null. */
 async function verifyPayment(
   rpcUrl: string,
   asset: string,
@@ -181,7 +217,7 @@ export function registerMarketRunpod(v1: FastifyInstance, deps: AppDeps): void {
     const key = apiKey();
     if (!key) return sendError(reply, 503, "not_configured", "gpu rentals not configured");
     try {
-      const gpus = await fetchCatalog(key);
+      const [gpus, sporeUsd] = await Promise.all([fetchCatalog(key), getSporeUsd()]);
       const spent = await committedUsd(db);
       return reply.send({
         gpus: gpus.map((g) => ({
@@ -190,9 +226,11 @@ export function registerMarketRunpod(v1: FastifyInstance, deps: AppDeps): void {
           vramGb: g.memoryInGb,
           community: g.communityCloud,
           pricePerHr: g.pricePerHr,
+          sporePerHr: Math.ceil(((g.pricePerHr as number) / sporeUsd) * 1e6) / 1e6,
         })),
         budgetRemainingUsd: Math.max(0, Math.round((budgetUsd() - spent) * 100) / 100),
         maxHours: MAX_HOURS,
+        spore: { address: SPORE_TOKEN, symbol: SPORE_SYMBOL, decimals: SPORE_DECIMALS, usd: sporeUsd },
         updatedAt: new Date(catalogCache?.at ?? Date.now()).toISOString(),
       });
     } catch (e) {
@@ -226,16 +264,24 @@ export function registerMarketRunpod(v1: FastifyInstance, deps: AppDeps): void {
     const gpu = gpus.find((g) => g.id === gpuTypeId);
     if (!gpu) return sendError(reply, 400, "bad_request", "unknown gpuTypeId");
 
-    const priceUsd = Math.ceil((gpu.pricePerHr as number) * hours * 100) / 100;
-    const priceUnits = BigInt(Math.ceil(priceUsd * 1_000_000)); // USDG 6 decimals
+    let sporeUsd: number;
+    try {
+      sporeUsd = await getSporeUsd();
+    } catch (e) {
+      logger.error({ err: e }, "spore price failed");
+      return sendError(reply, 502, "upstream_error", "could not price SPORE — try again shortly");
+    }
 
-    const payer = await verifyPayment(config.rpcUrl, config.assetAddress, paymentTx, priceUnits);
+    const priceUsd = Math.ceil((gpu.pricePerHr as number) * hours * 100) / 100;
+    const priceSporeUnits = usdToSporeUnits(priceUsd, sporeUsd);
+
+    const payer = await verifyPayment(config.rpcUrl, SPORE_TOKEN, paymentTx, priceSporeUnits);
     if (!payer) {
       return sendError(
         reply,
         402,
         "payment_not_found",
-        `no confirmed ${priceUsd.toFixed(2)} USDG payment to merchant in that tx`,
+        `no confirmed ${(Number(priceSporeUnits) / 1e18).toLocaleString("en-US", { maximumFractionDigits: 0 })} SPORE payment to merchant in that tx`,
       );
     }
 
@@ -281,10 +327,11 @@ export function registerMarketRunpod(v1: FastifyInstance, deps: AppDeps): void {
     }
 
     const expiresAt = new Date(Date.now() + hours * 3600 * 1000);
+    const priceSporeStr = (Number(priceSporeUnits) / 1e18).toFixed(6);
     const r = await db.query(
       `INSERT INTO gpu_rentals
-         (gpu_type_id, gpu_display, hours, hourly_rate, price_usdg, payment_tx, payer, pod_id, pod_status, expires_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'PROVISIONING',$9)
+         (gpu_type_id, gpu_display, hours, hourly_rate, price_usdg, price_spore, payment_tx, payer, pod_id, pod_status, expires_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'PROVISIONING',$10)
        ON CONFLICT (payment_tx) DO NOTHING
        RETURNING id`,
       [
@@ -293,6 +340,7 @@ export function registerMarketRunpod(v1: FastifyInstance, deps: AppDeps): void {
         hours,
         gpu.pricePerHr,
         priceUsd.toFixed(2),
+        priceSporeUnits.toString(),
         paymentTx.toLowerCase(),
         payer,
         pod.id,
@@ -308,7 +356,8 @@ export function registerMarketRunpod(v1: FastifyInstance, deps: AppDeps): void {
       id,
       gpu: gpu.displayName,
       hours,
-      priceUsdg: priceUsd.toFixed(2),
+      priceSpore: priceSporeStr,
+      priceUsd: priceUsd.toFixed(2),
       podId: pod.id,
       podName: pod.name,
       status: "PROVISIONING",
@@ -368,7 +417,9 @@ export function registerMarketRunpod(v1: FastifyInstance, deps: AppDeps): void {
       id: row.id,
       gpu: row.gpu_display,
       hours: Number(row.hours),
-      priceUsdg: String(row.price_usdg),
+      priceSpore:
+        row.price_spore != null ? (Number(row.price_spore) / 1e18).toFixed(6) : null,
+      priceUsd: String(row.price_usdg),
       podId: row.pod_id,
       status: podStatus ?? row.pod_status,
       access,
