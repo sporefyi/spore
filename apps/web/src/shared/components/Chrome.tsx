@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { PRIMARY_CHAIN } from "../chains";
+import { NavSpore } from "./NavSpore";
 
 const NAV_LINKS: ReadonlyArray<{ label: string; to: string; end?: boolean }> = [
   { label: "Agents", to: "/agents" },
@@ -92,8 +93,8 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-rule bg-bg">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-10 gap-y-3 px-6 py-4">
-        <Link to="/" className="flex items-center gap-3 text-ink">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
+        <Link to="/" className="flex shrink-0 items-center gap-3 text-ink">
           <SporeMark />
           <span className="font-mono text-[13px] uppercase tracking-widest text-ink">
             SPORE
@@ -111,12 +112,40 @@ export function Navbar() {
               end={l.end}
               className={navLinkClass}
             >
-              {l.label}
+              {l.label === "Playground" ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <NavSpore size={20} />
+                  {l.label}
+                </span>
+              ) : (
+                l.label
+              )}
             </NavLink>
           ))}
         </nav>
 
-        <div className="order-2 flex items-center gap-5 md:order-3">
+        <div className="order-2 ml-auto flex shrink-0 items-center gap-4 md:order-3">
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-faint lg:inline">
+            {PRIMARY_CHAIN.name} · {PRIMARY_CHAIN.chainId}
+          </span>
+          <a
+            href="https://robinhoodchain.blockscout.com/token/0xa5127fae2d0986a4cb6619b9c4ec53461726454b"
+            target="_blank"
+            rel="noreferrer"
+            title="$SPORE · 0xa5127fae2d0986a4cb6619b9c4ec53461726454b"
+            className="spore-glow rounded-full border border-fungal/60 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-fungal"
+          >
+            <span className="hidden xl:inline">$SPORE · 0xa5127fae2d0986a4cb6619b9c4ec53461726454b</span>
+            <span className="xl:hidden">$SPORE · 0xa512…6454b</span>
+          </a>
+          <a
+            href={PRIMARY_CHAIN.explorerUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-faint underline underline-offset-4 hover:text-muted sm:inline"
+          >
+            explorer
+          </a>
           <NavLink
             to="/connect"
             className={({ isActive }) =>
@@ -138,31 +167,6 @@ export function Navbar() {
           >
             <XIcon />
           </a>
-        </div>
-      </div>
-      <div className="border-t border-rule">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-8 gap-y-1 px-6 py-2">
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
-            {PRIMARY_CHAIN.name} · chain {PRIMARY_CHAIN.chainId}
-          </span>
-          <a
-            href="https://robinhoodchain.blockscout.com/token/0xa5127fae2d0986a4cb6619b9c4ec53461726454b"
-            target="_blank"
-            rel="noreferrer"
-            className="spore-glow rounded-full border border-fungal/60 px-4 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-fungal"
-          >
-            $SPORE · 0xa5127fae2d0986a4cb6619b9c4ec53461726454b
-          </a>
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
-            <a
-              href={PRIMARY_CHAIN.explorerUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="underline underline-offset-4 hover:text-muted"
-            >
-              explorer
-            </a>
-          </span>
         </div>
       </div>
     </header>
