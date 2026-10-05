@@ -1,0 +1,622 @@
+{
+ "generatedAt": "2026-10-05T03:47:12.487635Z",
+ "totalAgents": 7,
+ "totalBorrows": 43,
+ "totalRepays": 43,
+ "profiles": [
+  {
+   "agentId": 1,
+   "borrowCount": 37,
+   "repayCount": 37,
+   "cycles": 37,
+   "totalBorrowed": 410.0,
+   "totalRepaid": 414.1,
+   "totalFeesPaid": 4.1,
+   "reliability": 100.0,
+   "firstSeen": 79237318,
+   "lastActivity": 79324340,
+   "history": [
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79237318,
+     "tx": "0x42c814a9d408cc402745668add660aa66188f26fc726599e6d6a27db71131355"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79237409,
+     "tx": "0x9603314d3fe72c9bcd7b0104d633e8cdba62258a87419bdb98c8bb91014a9091"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79318435,
+     "tx": "0x081e818a6180caff0f29f5ef5ec8b80e37ccdd29a4e68e5c79d72cd1a90cb8f5"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79318486,
+     "tx": "0x70c8a2179b60b3ddbf25805cbcd78e9982fd9c5f28755525deeb009abc79da02"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79318533,
+     "tx": "0xc5c5b0335705ee8cd1decd7b9a913f6c1faba7f4e9bdfdee0b9e5652d650a309"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79318618,
+     "tx": "0x88d31d152d0be2a01ca78f72f50b231e46104f1e74dce0b32fb167e98521a863"
+    },
+    {
+     "type": "borrow",
+     "amount": 5.0,
+     "block": 79318646,
+     "tx": "0x10f5138cdf9bf46ff86b3ead88dc67b3f68929873657d2e895069e94792d5717"
+    },
+    {
+     "type": "repay",
+     "amount": 5.05,
+     "block": 79318700,
+     "tx": "0xef6f37fa3c3b3870040d7267dc4b30b6803fe37c673065ed63f5247ad6aefb24"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79318730,
+     "tx": "0x11547ac6f0365311ec479a9098c11596d68ba438ff5e73e8ab51f426544229d6"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79318819,
+     "tx": "0x7aa2f28c49528c277c3da7c70f8542c8dc6fbe57c0cbfffc9c9742d3d78de84e"
+    },
+    {
+     "type": "borrow",
+     "amount": 15.0,
+     "block": 79318844,
+     "tx": "0x9ae73dff716b6250d157b12a917aa278c992a86b0798a3fb98178b435e09ce07"
+    },
+    {
+     "type": "repay",
+     "amount": 15.15,
+     "block": 79318884,
+     "tx": "0xbca635637cc2c4c6f4befe2dea7941631879896058d7583de302f819deb689f8"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79318917,
+     "tx": "0xe91155b50c4f80fadd64e788849ded5579b6db8f9a27f1790853d8e22b03a491"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79318972,
+     "tx": "0x0731375b16751e666e4a90f1d585ddbdb256a730f2aa99c9a6832572efd18b6b"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79320742,
+     "tx": "0xad33a6453263a904317d4c5792ae27002be5f3b120ca15623df292724b23299e"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79320820,
+     "tx": "0x1e4b1eb9d5eb19b8af2b401a9399701eb9105d010948dbb56f9b3d6ae49835f3"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79320850,
+     "tx": "0xe4f516a3d2bad2025fa348896a4226277cafe03b258ae4bb88aed410654f11f6"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79320911,
+     "tx": "0x9a1039d707f142826bcacc0e33276ea34f26b7bd0988dfa3a2b2bddf186335fb"
+    },
+    {
+     "type": "borrow",
+     "amount": 5.0,
+     "block": 79320993,
+     "tx": "0xd8994683f1c026a6d5140f1269cf3252691108bb91060a55a242a4737d83dc8c"
+    },
+    {
+     "type": "repay",
+     "amount": 5.05,
+     "block": 79321054,
+     "tx": "0x67a3f96bacafdeb08f4b79a4f395f3441ce182cd32dcd4932a2dc65f3396ab4b"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79321096,
+     "tx": "0x56e8645c05471da7cad5c7c5716e4a3f745e1a3de801e44b9d6627ddbaf6665f"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79321183,
+     "tx": "0xcb1cf82bf3aaaf597b2ec6987942f9b2aed59489742876086c3944b7a4ed4da4"
+    },
+    {
+     "type": "borrow",
+     "amount": 15.0,
+     "block": 79321210,
+     "tx": "0x6d09bafe6585473b2fa020f7b30475030229f85bfef912a6097441d93308c27a"
+    },
+    {
+     "type": "repay",
+     "amount": 15.15,
+     "block": 79321251,
+     "tx": "0xe05824b563a5315a5f0cedb98fce8262b9e3ff1163d3b640e1ff75ff2b4b0d24"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79321277,
+     "tx": "0x0ce1fe9faa27492cd4f4a03927d3bf0b98c17196a150dc08b7a4ddd4a747f7cb"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79321346,
+     "tx": "0x96b81a2d50d815a254d25d64a56a66ff417a84f4e8c4fbae9bd94c289deedc5b"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79321404,
+     "tx": "0x476a263f1752a9b400f4162eaf9f7a98a0e5a1caee80bbe0361be5735e99900c"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79321541,
+     "tx": "0x3621492d16f66efda362028228443a1559bedd64d5268c0ea607e75c8e440911"
+    },
+    {
+     "type": "borrow",
+     "amount": 25.0,
+     "block": 79321588,
+     "tx": "0xe0abb0e75b548815d8aa81832d12886ce0d41b318be7235db5428866e82bc39c"
+    },
+    {
+     "type": "repay",
+     "amount": 25.25,
+     "block": 79321698,
+     "tx": "0x12163a15d2cc05e026dbceb54b69aa37709a514a91fd97bc3741fcaee727a088"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79321776,
+     "tx": "0x1e136bf9bc55f83ea565fb743827556cc48080ba72aa1400bbcde5a0148773fe"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79321838,
+     "tx": "0x08d818a29bd372271f5d9809d5cde634c7b09332471ca9b526b7546b352b6fcf"
+    },
+    {
+     "type": "borrow",
+     "amount": 5.0,
+     "block": 79321866,
+     "tx": "0x2df9abfd4a6f34391d16983dc5cac6ed24b28decd67ddca6fadd312e42f2decc"
+    },
+    {
+     "type": "repay",
+     "amount": 5.05,
+     "block": 79321962,
+     "tx": "0x667127bc43d60d29a60d377137261f884792662e068f50364d474c474018f83d"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79321993,
+     "tx": "0x83ec6700a6e0c10100db8cef96548ead96c7b3eeab460c9840a7dfa42563ba2f"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79322052,
+     "tx": "0xbf9746a7ad779c9defc768ab13ec2a47348757465530093196f815ceca0cd318"
+    },
+    {
+     "type": "borrow",
+     "amount": 15.0,
+     "block": 79322097,
+     "tx": "0xf15785f8148716490f17e87ec17cfd9708a1515293ce96358924c6ceaf736643"
+    },
+    {
+     "type": "repay",
+     "amount": 15.15,
+     "block": 79322164,
+     "tx": "0x10851be977e4775a44eda76beca37509d9f2ced13f74591d492229eb4c7b5ea2"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79322188,
+     "tx": "0x1a54a5333cbbb7601b285ba3ec3c8be065bcf0db40f423634d6d08ad06e75f5b"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79322274,
+     "tx": "0xaf86a3ed6601c53b2fbc3606077cecee36be21521cb6368ae24a938945dc42e0"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79322299,
+     "tx": "0xc4de94744c3f9775bfffe8ea0987ee8877ac75ac5427fdd7ec9b68b520c552f2"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79322352,
+     "tx": "0x50bf17a30d032b66da967c6968a128c04338664c3b660f80db1467a0df615174"
+    },
+    {
+     "type": "borrow",
+     "amount": 5.0,
+     "block": 79322416,
+     "tx": "0x86047ed87369a7578b6bda12fb9a630d4dbf2e22eaef8122b07cc13ccad1156d"
+    },
+    {
+     "type": "repay",
+     "amount": 5.05,
+     "block": 79322543,
+     "tx": "0x61f67afd8dfac2d482f60dc954018a3194fe49d024e80ffe13e5858a7a67c07c"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79322592,
+     "tx": "0x71d2e88841e011423df704cc13c25a9aacb7fdd6c8f73945f9ea0e6dadbd4017"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79322676,
+     "tx": "0x132883146a0a7954ea3d8ccb270e7e48e6c661b8979e132503ac351e154d9dea"
+    },
+    {
+     "type": "borrow",
+     "amount": 25.0,
+     "block": 79322699,
+     "tx": "0xd7807102f7fd416efea4e32969150798f7b2f30573a4fcfc876acaf6505309ee"
+    },
+    {
+     "type": "repay",
+     "amount": 25.25,
+     "block": 79322774,
+     "tx": "0xb94eb9bce82e6b669decb40cd7cbad0620fb5f015dd84fa21dada013e87c6eb9"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79322815,
+     "tx": "0x5da3d31ef6bda7274a3897b36c8e967d504d669ca10c16e55bf7798ab69a23c2"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79322865,
+     "tx": "0xe1120ff855f2979d4e74bd22f244988af8607a089b44691627473144d443f9b7"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79322894,
+     "tx": "0xa12f2a0b819bce35ace43ba5b31dfdb77ee4ca79829a30c1a1233741f3f13203"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79322993,
+     "tx": "0x211ac643d964e3d985f6fe60cb72dfcf97aabceddebf136594c49ff9b256832a"
+    },
+    {
+     "type": "borrow",
+     "amount": 15.0,
+     "block": 79323051,
+     "tx": "0xc350948f2ea00bb855351c4a41fd5870164fd3dcfb7b0f8919a44c332b01be72"
+    },
+    {
+     "type": "repay",
+     "amount": 15.15,
+     "block": 79323149,
+     "tx": "0x777259c2fad81bc127696b59e7581002638909a3354ee4b40d69769e4e9acfbc"
+    },
+    {
+     "type": "borrow",
+     "amount": 5.0,
+     "block": 79323182,
+     "tx": "0x704f4b53fa52479d3ecd246074267d241c01eea944e5bff8bd7fb337afb9fbd5"
+    },
+    {
+     "type": "repay",
+     "amount": 5.05,
+     "block": 79323239,
+     "tx": "0x19874c2edf304e4f0b9955bc8fbc4841ed661c1038779682deeb20355ab6e153"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79323305,
+     "tx": "0xbe97c6c45e8b5fbd001e6e683c882f5fc32c6958689230879b86464cb7a88335"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79323400,
+     "tx": "0x3bbabea35bbff168a12243344298ab520de655f6ddc85667d7ee8041fcff5c80"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79323441,
+     "tx": "0x5f84a5783c414384af1e87fde5cb8002dc31651545f3556c5c13432039953d14"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79323498,
+     "tx": "0x47b6fc25b4a0dc2d899333d94806277875760028ba5f550a646a51dd5e7c4491"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79323549,
+     "tx": "0x0816109c0ec74897850085251527854b4c1c5e4c5c3f65fdd2a91c1b23c2aa25"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79323647,
+     "tx": "0x3c248ede991d6eab14925f90aaf48ff39a51b203813365544aa7025c5a6b9839"
+    },
+    {
+     "type": "borrow",
+     "amount": 15.0,
+     "block": 79323679,
+     "tx": "0x5a40e00b7ff83987c992c26daf46736f81ac1a9b65858ee958ad24a34037ef5b"
+    },
+    {
+     "type": "repay",
+     "amount": 15.15,
+     "block": 79323733,
+     "tx": "0xa5d9072c399599c87ded9d0bf998d557060e197262591c75d8e74586bafa3eaf"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79323768,
+     "tx": "0xe3260d331129af7cf8551d0d0d8bbf370ef9be53664ef81f2bd72200f107e087"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79323842,
+     "tx": "0xebd3cccbef24d875bfb4bad34cdf20e0af91fbd0f049dba790e7a2903537d451"
+    },
+    {
+     "type": "borrow",
+     "amount": 5.0,
+     "block": 79323915,
+     "tx": "0x11a06e6282ef964ec934f6451b97fc491b286e05a0a0116195ea46fd0681664c"
+    },
+    {
+     "type": "repay",
+     "amount": 5.05,
+     "block": 79323972,
+     "tx": "0xa4e6ab7369116aa02bc118eafa5cbd6290d546272327a17f57b6e234da844bce"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79323999,
+     "tx": "0xa6abaa8984f20559323386ab05bb901549d4e915885ceb4a6fc53ae2fd0736fc"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79324109,
+     "tx": "0x09ae983f8c3808576913a2310bbfbe4e3b4a29618e7f1015bc0cf4a60bfa38d4"
+    },
+    {
+     "type": "borrow",
+     "amount": 25.0,
+     "block": 79324140,
+     "tx": "0x4828c56445f2d5330b46e47fe9f62f3ddc4a2c64125cfb3a5906b922d6b76b24"
+    },
+    {
+     "type": "repay",
+     "amount": 25.25,
+     "block": 79324221,
+     "tx": "0xa70a0561d98d4f95743f3c66b1aa0999c1046d0fc3cc5b6af503f11244387481"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 79324255,
+     "tx": "0xc0a763d216032aecfa7802dd369a75787fb577f21b34133700e04b83b91e92b1"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 79324340,
+     "tx": "0xb6d0decf94eabe295fb848025205e0b02f2f71b8f492b237d47f317e07f1314a"
+    }
+   ]
+  },
+  {
+   "agentId": 5,
+   "borrowCount": 1,
+   "repayCount": 1,
+   "cycles": 1,
+   "totalBorrowed": 0.4,
+   "totalRepaid": 0.402,
+   "totalFeesPaid": 0.002,
+   "reliability": 100.0,
+   "firstSeen": 80264666,
+   "lastActivity": 80265526,
+   "history": [
+    {
+     "type": "borrow",
+     "amount": 0.4,
+     "block": 80264666,
+     "tx": "0xf4fa2f5c97c8d550a5be67ff592a41b39a5f4ee50d3ced334462ca0127af00f5"
+    },
+    {
+     "type": "repay",
+     "amount": 0.402,
+     "block": 80265526,
+     "tx": "0xc9dc54491b621fa59b97379fd1e5f2d90b57eb61b9b35e548f8e36142dd6bf8c"
+    }
+   ]
+  },
+  {
+   "agentId": 6,
+   "borrowCount": 1,
+   "repayCount": 1,
+   "cycles": 1,
+   "totalBorrowed": 0.4,
+   "totalRepaid": 0.402,
+   "totalFeesPaid": 0.002,
+   "reliability": 100.0,
+   "firstSeen": 80281628,
+   "lastActivity": 80282526,
+   "history": [
+    {
+     "type": "borrow",
+     "amount": 0.4,
+     "block": 80281628,
+     "tx": "0x13bb0a906d922eddb7764ed013c1ede210e40121cbd0371eb073948e3a4ac6e0"
+    },
+    {
+     "type": "repay",
+     "amount": 0.402,
+     "block": 80282526,
+     "tx": "0xaaba5138cc22a2c241f37706102f70dd3d2e07953d40b0f94ad90fba9a3103ae"
+    }
+   ]
+  },
+  {
+   "agentId": 15,
+   "borrowCount": 1,
+   "repayCount": 1,
+   "cycles": 1,
+   "totalBorrowed": 0.4,
+   "totalRepaid": 0.402,
+   "totalFeesPaid": 0.002,
+   "reliability": 100.0,
+   "firstSeen": 80265140,
+   "lastActivity": 80266017,
+   "history": [
+    {
+     "type": "borrow",
+     "amount": 0.4,
+     "block": 80265140,
+     "tx": "0xffcb9e752e1551332f0030d53d337491054858826d155baa563b680792947069"
+    },
+    {
+     "type": "repay",
+     "amount": 0.402,
+     "block": 80266017,
+     "tx": "0xaa6709dd982cd9b2338deb55c33f57bbfc1534370afdd79b60bef942cfe46c00"
+    }
+   ]
+  },
+  {
+   "agentId": 21,
+   "borrowCount": 1,
+   "repayCount": 1,
+   "cycles": 1,
+   "totalBorrowed": 0.4,
+   "totalRepaid": 0.402,
+   "totalFeesPaid": 0.002,
+   "reliability": 100.0,
+   "firstSeen": 80265661,
+   "lastActivity": 80266575,
+   "history": [
+    {
+     "type": "borrow",
+     "amount": 0.4,
+     "block": 80265661,
+     "tx": "0x1bb6eabd0a3ea8b3a41ba61089b83b7d9188042296926f480f6a29eb1623d514"
+    },
+    {
+     "type": "repay",
+     "amount": 0.402,
+     "block": 80266575,
+     "tx": "0xfaf9c26d625ca74835a2303d6fbab17248b0eaa57fa36cc48d6f1767abc08526"
+    }
+   ]
+  },
+  {
+   "agentId": 28,
+   "borrowCount": 1,
+   "repayCount": 1,
+   "cycles": 1,
+   "totalBorrowed": 0.4,
+   "totalRepaid": 0.402,
+   "totalFeesPaid": 0.002,
+   "reliability": 100.0,
+   "firstSeen": 80278478,
+   "lastActivity": 80279313,
+   "history": [
+    {
+     "type": "borrow",
+     "amount": 0.4,
+     "block": 80278478,
+     "tx": "0x8c3a09bdebc3ee9ce8a3f04c5c92d62ec7ab45d66072fcf9a6faa551c07011e6"
+    },
+    {
+     "type": "repay",
+     "amount": 0.402,
+     "block": 80279313,
+     "tx": "0x84f10ff16d2ab80a05e9c3cab9fb014e957b2788b39955f5069d645ca4f95138"
+    }
+   ]
+  },
+  {
+   "agentId": 29,
+   "borrowCount": 1,
+   "repayCount": 1,
+   "cycles": 1,
+   "totalBorrowed": 0.4,
+   "totalRepaid": 0.402,
+   "totalFeesPaid": 0.002,
+   "reliability": 100.0,
+   "firstSeen": 80279994,
+   "lastActivity": 80280880,
+   "history": [
+    {
+     "type": "borrow",
+     "amount": 0.4,
+     "block": 80279994,
+     "tx": "0x4fc5958e2ba7cb396ff61723fa0f6b5068fd7214e94ac436284725ace18d5dad"
+    },
+    {
+     "type": "repay",
+     "amount": 0.402,
+     "block": 80280880,
+     "tx": "0xe12bd663238ea360000b1cd61be562de269bcdd71e7c71d974ab19cefda0959b"
+    }
+   ]
+  }
+ ]
+}
