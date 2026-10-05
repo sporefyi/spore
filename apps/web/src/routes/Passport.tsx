@@ -98,11 +98,26 @@ function Sparkline({ points }: { points: ScorePoint[] }) {
   );
 }
 
+type CreditProfile = {
+  agentId: number;
+  borrowCount: number;
+  repayCount: number;
+  cycles: number;
+  totalBorrowed: number;
+  totalRepaid: number;
+  totalFeesPaid: number;
+  reliability: number;
+  history: Array<{ type: 'borrow' | 'repay'; amount: number; block: number; tx: string }>;
+};
+
+type OnChainState = 'loading' | 'none' | CreditProfile;
+
 export default function Passport() {
   const { agent } = useParams<{ agent: string }>();
   const agentId = agent ?? '';
   const [profile, setProfile] = useState<ProfileState>('loading');
   const [history, setHistory] = useState<HistoryState>('loading');
+  const [onchain, setOnchain] = useState<OnChainState>('loading');
 
   useEffect(() => {
     document.title = `SPORE — Passport ${agentId}`;
@@ -128,6 +143,25 @@ export default function Passport() {
     return () => {
       alive = false;
     };
+  }, [agent]);
+
+  useEffect(() => {
+    let alive = true;
+    setOnchain('loading');
+    const id = parseInt(agent ?? '', 10);
+    if (!agent || Number.isNaN(id)) {
+      setOnchain('none');
+      return () => { alive = false; };
+    }
+    fetch('/credit-profiles.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!alive) return;
+        const p = d?.profiles?.find((x: CreditProfile) => x.agentId === id);
+        setOnchain(p ?? 'none');
+      })
+      .catch(() => { if (alive) setOnchain('none'); });
+    return () => { alive = false; };
   }, [agent]);
 
   useEffect(() => {
@@ -224,6 +258,47 @@ export default function Passport() {
               <Stat label="Loans" value={num(loaded.history.loans)} />
               <Stat label="Repaid" value={usd(loaded.history.repaidUsd)} />
               <Stat label="On-time rate" value={pct(loaded.history.onTimeRate)} />
+            </Section>
+
+            <Section n="01b" title="On-chain credit activity">
+              {onchain === 'loading' && <LoadingState label="Reading the chain…" />}
+              {onchain === 'none' && (
+                <EmptyState
+                  title="No on-chain credit activity yet."
+                  copy="Borrow and repayment events appear here once this agent uses its credit line."
+                />
+              )}
+              {typeof onchain === 'object' && (
+                <>
+                  <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+                    <Stat label="Cycles" value={num(onchain.cycles)} />
+                    <Stat label="Borrowed" value={usd(onchain.totalBorrowed)} />
+                    <Stat label="Repaid" value={usd(onchain.totalRepaid)} />
+                    <Stat label="Fees paid" value={usd(onchain.totalFeesPaid)} />
+                  </div>
+                  <p className="font-mono text-xs text-muted">
+                    Reliability {onchain.reliability}% · {onchain.borrowCount} borrows · {onchain.repayCount} repays
+                  </p>
+                  <div className="mt-6 space-y-2">
+                    {onchain.history.slice(-10).reverse().map((h, i) => (
+                      <div key={i} className="flex items-center justify-between font-mono text-sm border-b border-line/30 pb-2">
+                        <span className={h.type === 'repay' ? 'text-moss' : 'text-ink'}>
+                          {h.type === 'repay' ? '↩ repaid' : '↗ borrowed'}
+                        </span>
+                        <span className="tnum">${h.amount.toFixed(2)}</span>
+                        <a
+                          href={`https://explorer.robinhood.com/tx/${h.tx}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-muted underline hover:text-ink text-xs"
+                        >
+                          {h.tx.slice(0, 10)}…
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </Section>
 
             <Section n="02" title="Credit utilization">
