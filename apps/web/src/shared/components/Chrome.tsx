@@ -93,7 +93,7 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-rule bg-bg">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
+      <div className="mx-auto flex max-w-6xl flex-nowrap items-center gap-x-5 px-6 py-3">
         <Link to="/" className="flex shrink-0 items-center gap-3 text-ink">
           <SporeMark />
           <span className="font-mono text-[13px] uppercase tracking-widest text-ink">
@@ -103,7 +103,7 @@ export function Navbar() {
 
         <nav
           aria-label="Primary"
-          className="order-3 -mx-6 flex w-[calc(100%+3rem)] items-center gap-6 overflow-x-auto px-6 md:order-2 md:mx-0 md:w-auto md:flex-1 md:overflow-visible md:px-0"
+          className="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto"
         >
           {NAV_LINKS.map((l) => (
             <NavLink
@@ -124,9 +124,9 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="order-2 ml-auto flex shrink-0 items-center gap-4 md:order-3">
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-faint lg:inline">
-            {PRIMARY_CHAIN.name} · {PRIMARY_CHAIN.chainId}
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-faint xl:inline">
+            {PRIMARY_CHAIN.chainId}
           </span>
           <a
             href="https://robinhoodchain.blockscout.com/token/0xa5127fae2d0986a4cb6619b9c4ec53461726454b"
@@ -135,14 +135,14 @@ export function Navbar() {
             title="$SPORE · 0xa5127fae2d0986a4cb6619b9c4ec53461726454b"
             className="spore-glow rounded-full border border-fungal/60 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-fungal"
           >
-            <span className="hidden xl:inline">$SPORE · 0xa5127fae2d0986a4cb6619b9c4ec53461726454b</span>
-            <span className="xl:hidden">$SPORE · 0xa512…6454b</span>
+            $SPORE
           </a>
           <a
             href={PRIMARY_CHAIN.explorerUrl}
             target="_blank"
             rel="noreferrer"
-            className="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-faint underline underline-offset-4 hover:text-muted sm:inline"
+            aria-label="Explorer"
+            className="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-faint underline underline-offset-4 hover:text-muted md:inline"
           >
             explorer
           </a>
