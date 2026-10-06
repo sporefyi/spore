@@ -106,7 +106,7 @@ export function Navbar() {
 
         <nav
           aria-label="Primary"
-          className="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto"
+          className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {NAV_LINKS.map((l) => (
             <NavLink
