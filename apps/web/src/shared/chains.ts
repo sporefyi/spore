@@ -78,6 +78,13 @@ export function explorerTxUrl(txHash: string): string {
   return `${PRIMARY_CHAIN.explorerUrl}/tx/${txHash}`;
 }
 
+/** SPORE token (18 decimals) — the asset GPU rentals accept. */
+export const SPORE = {
+  address: '0xa5127fae2d0986a4cb6619b9c4ec53461726454b',
+  decimals: 18,
+  symbol: 'SPORE',
+} as const;
+
 /** USDG stablecoin (6 decimals) — the asset merchants accept. */
 export const USDG = {
   address: '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168',
