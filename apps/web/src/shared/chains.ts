@@ -100,10 +100,10 @@ export const ROBINHOOD_RPC_URL = 'https://rpc.mainnet.chain.robinhood.com';
 
 /**
  * SyndicateManager — syndicated loans for agents.
- * Zero address = not yet deployed. The /syndicate page renders an honest
- * "awaiting deployment" state until this is set to the real contract.
+ * Deployed 2026-10-06: 0xe7a153af9cb008adab6a280a0ed83eb3a180e4ab
+ * Tx: 0x343d3e714953df65d31643b7305cbaca1aea7084b8025a4087e03bbee26a2982
  */
-export const SYNDICATE_MANAGER = '0x0000000000000000000000000000000000000000' as const;
+export const SYNDICATE_MANAGER: string = '0xe7a153af9cb008adab6a280a0ed83eb3a180e4ab';
 
 /** EIP-1193 chain-add parameters for Robinhood Chain. */
 export function robinhoodChainParams(): {
