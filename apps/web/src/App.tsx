@@ -13,6 +13,8 @@ const Developers = lazy(() => import('./routes/Developers'));
 const Connect = lazy(() => import('./routes/Connect'));
 const Live = lazy(() => import('./routes/live/LivePage'));
 const Playground = lazy(() => import('./routes/Playground'));
+const Leaderboard = lazy(() => import('./routes/Leaderboard'));
+const Gpu = lazy(() => import('./routes/Gpu'));
 
 function NotFound() {
   return (
@@ -77,6 +79,8 @@ export default function App() {
               <Route path="/connect" element={<Connect />} />
               <Route path="/live" element={<Live />} />
               <Route path="/playground" element={<Playground />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/gpu" element={<Gpu />} />
               <Route path="/passport" element={<Navigate to="/agents" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
