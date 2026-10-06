@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Eyebrow,
   Rule,
   Reveal,
   LoadingState,
 } from '../shared/components/primitives';
-import { SYNDICATE_MANAGER, ROBINHOOD_RPC_URL } from '../shared/chains';
+import { SYNDICATE_MANAGER } from '../shared/chains';
+import { useSyndicateLoans, STATUS_LABEL, type LoanView } from '../shared/syndicate';
 
 const DEPLOYED = SYNDICATE_MANAGER !== '0x0000000000000000000000000000000000000000';
 
@@ -43,22 +45,52 @@ const NUMBERS = [
   { label: 'Tests passing', value: '8 / 8', note: 'full lifecycle, default, cancel, edge cases' },
 ];
 
+const STATUS_TONE = [
+  'text-fungal',   // Funding
+  'text-ink',      // Active
+  'text-muted',    // Repaid
+  'text-red-400',  // Defaulted
+  'text-faint',    // Cancelled
+];
+
+function LoanRow({ loan: l }: { loan: LoanView }) {
+  const pct = l.target > 0 ? Math.min(100, (l.funded / l.target) * 100) : 0;
+  return (
+    <div className="border-b border-rule/60 py-5">
+      <div className="flex items-baseline justify-between gap-4">
+        <Link to={`/passport/${l.agentId}`} className="font-mono text-sm text-ink hover:underline">
+          Agent #{l.agentId}
+        </Link>
+        <span className={`font-mono text-xs uppercase tracking-widest ${STATUS_TONE[l.status]}`}>
+          {STATUS_LABEL[l.status]}
+        </span>
+      </div>
+      <p className="mt-1 text-sm text-muted">{l.purpose}</p>
+      <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-faint">
+        <span>
+          <span className="tnum text-ink">${l.funded.toFixed(2)}</span> / ${l.target.toFixed(2)}
+        </span>
+        <span>fee {(l.feeBps / 100).toFixed(1)}%</span>
+        {l.status === 1 && (
+          <span>
+            repaid <span className="tnum text-ink">${l.repaid.toFixed(2)}</span> / ${l.totalOwed.toFixed(2)}
+          </span>
+        )}
+      </div>
+      {l.status === 0 && (
+        <div className="mt-2 h-1 w-full bg-rule/40">
+          <div className="h-1 bg-fungal" style={{ width: `${pct}%` }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Syndicate() {
-  const [loans, setLoans] = useState<'loading' | 'empty'>('loading');
+  const loansState = useSyndicateLoans();
 
   useEffect(() => {
     document.title = 'SPORE — Syndicated Loans';
-  }, []);
-
-  useEffect(() => {
-    if (!DEPLOYED) {
-      setLoans('empty');
-      return;
-    }
-    // Live loan enumeration goes here once the contract is deployed.
-    // Reads nextLoanId + loans(i) via ROBINHOOD_RPC_URL with ethers.
-    void ROBINHOOD_RPC_URL;
-    setLoans('empty');
   }, []);
 
   return (
@@ -80,14 +112,35 @@ export default function Syndicate() {
         <div className="mt-12">
           <Eyebrow>Live syndicates</Eyebrow>
           <div className="mt-6">
-            {loans === 'loading' && <LoadingState label="Reading the chain…" />}
-            {loans === 'empty' && (
+            {loansState.kind === 'loading' && <LoadingState label="Reading the chain…" />}
+            {loansState.kind === 'not-deployed' && (
               <div className="border border-rule/60 px-6 py-10 text-center">
                 <p className="font-mono text-sm text-muted">
-                  {DEPLOYED
-                    ? 'No syndicated loans yet. The first proposal opens this market.'
-                    : 'The SyndicateManager contract is built and tested. It opens for proposals once deployed.'}
+                  The SyndicateManager contract is built and tested. It opens for proposals once deployed.
                 </p>
+              </div>
+            )}
+            {loansState.kind === 'error' && (
+              <div className="border border-rule/60 px-6 py-10 text-center">
+                <p className="font-mono text-sm text-muted">
+                  Couldn't read the chain: {loansState.message}
+                </p>
+              </div>
+            )}
+            {loansState.kind === 'ready' && loansState.loans.length === 0 && (
+              <div className="border border-rule/60 px-6 py-10 text-center">
+                <p className="font-mono text-sm text-muted">
+                  No syndicated loans yet. The first proposal opens this market.
+                </p>
+              </div>
+            )}
+            {loansState.kind === 'ready' && loansState.loans.length > 0 && (
+              <div className="space-y-1">
+                {loansState.loans.map((l) => (
+                  <Reveal key={l.id}>
+                    <LoanRow loan={l} />
+                  </Reveal>
+                ))}
               </div>
             )}
           </div>
