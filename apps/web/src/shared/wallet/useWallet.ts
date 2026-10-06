@@ -3,6 +3,7 @@ import { BrowserProvider, Contract, formatUnits, parseUnits } from 'ethers';
 import {
   PRIMARY_CHAIN,
   USDG,
+  SPORE,
   MARKET_MERCHANT,
   robinhoodChainParams,
 } from '../chains';
@@ -41,6 +42,8 @@ export interface UseWallet {
   disconnect: () => void;
   /** Pay an exact USDG amount to the market merchant. Resolves with the tx hash. */
   payUsdg: (amountUsdg: string) => Promise<string>;
+  /** Pay an exact SPORE amount to the market merchant. Resolves with the tx hash. */
+  paySpore: (amountSpore: string) => Promise<string>;
 }
 
 function shortAddr(a: string): string {
@@ -196,8 +199,11 @@ export function useWallet(): UseWallet {
     setStatus(window.ethereum ? 'disconnected' : 'no-provider');
   }, []);
 
-  const payUsdg = useCallback(
-    async (amountUsdg: string): Promise<string> => {
+  const payToken = useCallback(
+    async (
+      token: { address: string; decimals: number; symbol: string },
+      amount: string,
+    ): Promise<string> => {
       const eth = window.ethereum;
       if (!eth || !address) throw new Error('Wallet not connected.');
       const onChain = await ensureChain();
@@ -205,15 +211,15 @@ export function useWallet(): UseWallet {
       const provider = new BrowserProvider(eth);
       providerRef.current = provider;
       const signer = await provider.getSigner();
-      const token = new Contract(USDG.address, ERC20_ABI, signer);
-      const value = parseUnits(amountUsdg, USDG.decimals);
-      const bal: bigint = await token.balanceOf(address);
+      const contract = new Contract(token.address, ERC20_ABI, signer);
+      const value = parseUnits(amount, token.decimals);
+      const bal: bigint = await contract.balanceOf(address);
       if (bal < value) {
         throw new Error(
-          `Insufficient USDG balance (${formatUnits(bal, USDG.decimals)} ${USDG.symbol}).`,
+          `Insufficient ${token.symbol} balance (${formatUnits(bal, token.decimals)} ${token.symbol}).`,
         );
       }
-      const tx = await token.transfer(MARKET_MERCHANT, value);
+      const tx = await contract.transfer(MARKET_MERCHANT, value);
       const receipt = await tx.wait(1);
       if (receipt?.status !== 1) throw new Error('Transfer transaction failed on-chain.');
       void refreshBalance(address);
@@ -222,7 +228,17 @@ export function useWallet(): UseWallet {
     [address, ensureChain, refreshBalance],
   );
 
-  return { status, address, usdgBalance, error, connect, disconnect, payUsdg };
+  const payUsdg = useCallback(
+    (amountUsdg: string): Promise<string> => payToken(USDG, amountUsdg),
+    [payToken],
+  );
+
+  const paySpore = useCallback(
+    (amountSpore: string): Promise<string> => payToken(SPORE, amountSpore),
+    [payToken],
+  );
+
+  return { status, address, usdgBalance, error, connect, disconnect, payUsdg, paySpore };
 }
 
 export { shortAddr };
