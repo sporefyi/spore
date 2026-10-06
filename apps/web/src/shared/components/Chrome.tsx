@@ -5,6 +5,7 @@ import { NavSpore } from "./NavSpore";
 const NAV_LINKS: ReadonlyArray<{ label: string; to: string; end?: boolean }> = [
   { label: "Agents", to: "/agents" },
   { label: "Leaderboard", to: "/leaderboard" },
+  { label: "Syndicate", to: "/syndicate" },
   { label: "Markets", to: "/market" },
   { label: "Network", to: "/#ledger" },
   { label: "Protocol", to: "/protocol" },
