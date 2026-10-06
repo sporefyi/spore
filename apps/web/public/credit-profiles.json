@@ -1,20 +1,20 @@
 {
- "generatedAt": "2026-10-05T03:47:12.487635Z",
+ "generatedAt": "2026-10-06T02:19:44.680859+00:00",
  "totalAgents": 7,
- "totalBorrows": 43,
- "totalRepays": 43,
+ "totalBorrows": 44,
+ "totalRepays": 44,
  "profiles": [
   {
    "agentId": 1,
-   "borrowCount": 37,
-   "repayCount": 37,
-   "cycles": 37,
-   "totalBorrowed": 410.0,
-   "totalRepaid": 414.1,
-   "totalFeesPaid": 4.1,
+   "borrowCount": 38,
+   "repayCount": 38,
+   "cycles": 38,
+   "totalBorrowed": 420.0,
+   "totalRepaid": 424.2,
+   "totalFeesPaid": 4.2,
    "reliability": 100.0,
    "firstSeen": 79237318,
-   "lastActivity": 79324340,
+   "lastActivity": 80501665,
    "history": [
     {
      "type": "borrow",
@@ -459,6 +459,18 @@
      "amount": 10.1,
      "block": 79324340,
      "tx": "0xb6d0decf94eabe295fb848025205e0b02f2f71b8f492b237d47f317e07f1314a"
+    },
+    {
+     "type": "borrow",
+     "amount": 10.0,
+     "block": 80501571,
+     "tx": "0xaab386f04a8cf7adc7880aec82dc3c09ee149abf0aeddbfd62071fb40ee5f148"
+    },
+    {
+     "type": "repay",
+     "amount": 10.1,
+     "block": 80501665,
+     "tx": "0x6e4afa2d53f93daeb7ac7fccbae04e173dcb0b7f2e59e6f44433ade20f599e1a"
     }
    ]
   },
@@ -468,7 +480,7 @@
    "repayCount": 1,
    "cycles": 1,
    "totalBorrowed": 0.4,
-   "totalRepaid": 0.402,
+   "totalRepaid": 0.4,
    "totalFeesPaid": 0.002,
    "reliability": 100.0,
    "firstSeen": 80264666,
@@ -494,7 +506,7 @@
    "repayCount": 1,
    "cycles": 1,
    "totalBorrowed": 0.4,
-   "totalRepaid": 0.402,
+   "totalRepaid": 0.4,
    "totalFeesPaid": 0.002,
    "reliability": 100.0,
    "firstSeen": 80281628,
@@ -520,7 +532,7 @@
    "repayCount": 1,
    "cycles": 1,
    "totalBorrowed": 0.4,
-   "totalRepaid": 0.402,
+   "totalRepaid": 0.4,
    "totalFeesPaid": 0.002,
    "reliability": 100.0,
    "firstSeen": 80265140,
@@ -546,7 +558,7 @@
    "repayCount": 1,
    "cycles": 1,
    "totalBorrowed": 0.4,
-   "totalRepaid": 0.402,
+   "totalRepaid": 0.4,
    "totalFeesPaid": 0.002,
    "reliability": 100.0,
    "firstSeen": 80265661,
@@ -572,7 +584,7 @@
    "repayCount": 1,
    "cycles": 1,
    "totalBorrowed": 0.4,
-   "totalRepaid": 0.402,
+   "totalRepaid": 0.4,
    "totalFeesPaid": 0.002,
    "reliability": 100.0,
    "firstSeen": 80278478,
@@ -598,7 +610,7 @@
    "repayCount": 1,
    "cycles": 1,
    "totalBorrowed": 0.4,
-   "totalRepaid": 0.402,
+   "totalRepaid": 0.4,
    "totalFeesPaid": 0.002,
    "reliability": 100.0,
    "firstSeen": 80279994,
