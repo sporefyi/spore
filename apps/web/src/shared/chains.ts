@@ -98,6 +98,13 @@ export const MARKET_MERCHANT = '0x4c7cfbd388249f3c3027c52635cf70bb78084ed5';
 /** Public RPC for wallet_addEthereumChain / reads. */
 export const ROBINHOOD_RPC_URL = 'https://rpc.mainnet.chain.robinhood.com';
 
+/**
+ * SyndicateManager — syndicated loans for agents.
+ * Zero address = not yet deployed. The /syndicate page renders an honest
+ * "awaiting deployment" state until this is set to the real contract.
+ */
+export const SYNDICATE_MANAGER = '0x0000000000000000000000000000000000000000' as const;
+
 /** EIP-1193 chain-add parameters for Robinhood Chain. */
 export function robinhoodChainParams(): {
   chainId: string;
